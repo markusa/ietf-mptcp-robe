@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY RFC0793 SYSTEM "https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.0793.xml">
+<!ENTITY RFC6824 SYSTEM "https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6824.xml">
+<!ENTITY I-D.ietf-mptcp-rfc6824bis SYSTEM "https://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.draft-ietf-mptcp-rfc6824bis-18.xml">
+]>
+<rfc submissionType="IETF" docName="draft-amend-mptcp-robe-00" category="exp">
+  <?rfc compact="yes"?>
+  <?rfc text-list-symbols="o*+-"?>
+  <?rfc subcompact="no"?>
+  <?rfc sortrefs="yes"?>
+  <?rfc symrefs="yes"?>
+  <?rfc strict="yes"?>
+  <?rfc toc="yes"?>
+  <front>
+    <title abbrev="MPTCP RobE">Multipath TCP extension for Robust Session Establishment</title>
+    <author fullname="Markus Amend" initials="M." surname="Amend">
+      <organization>Deutsche Telekom</organization>
+      <address>
+        <postal>
+          <street>Deutsche-Telekom-Allee 7</street>
+          <street>64295 Darmstadt</street>
+          <street>Germany</street>
+        </postal>
+        <email>Markus.Amend@telekom.de</email>
+      </address>
+    </author>
+    <date day="28" month="June" year="2019"/>
+    <workgroup>Multipath TCP Working Group</workgroup>
+    <abstract>
+      <t>
+   Multipath TCP extends the plain, singlepath limited, TCP towards the capability of multipath transmission. This greatly improves the reliability and performance of TCP communication. For backwards compatiblity reason the Multipath TCP was designed to setup successfully an inital path first, after which subsequent paths can be added for multipath transmission. For that reason the Multipath TCP has the same limitations as the plain TCP during connection setup, in case the selected path is not functional.</t>
+      <t>
+   RobE provides the ability to simultaneously use multiple paths for connection setup. This document presents with RobE a set of extensions to Multipath TCP to overcome its singlepath limitation during connection initialisation and extends it to a full fledged multipath protocol. RobE ensures connecitivity if at least one functional path out of a bunch of paths is given and offers beside that the opportunity to significantly improve loading times of Internet services.</t>
+    </abstract>
+  </front>
+  <middle>
+    <section title="Introduction" anchor="introduction">
+      <t>
+   Multipath TCP Robust session Establishment (MPTCP RobE) is a set of extensions to regular MPTCP
+   <xref target="RFC6824"/> and its next upcoming version <xref target="I-D.ietf-mptcp-rfc6824bis"/>, which releases single path limitations during the initial connection setup. Several scenarios requires and benefit from a reliable and in time connection setup which is not covered by <xref target="RFC6824"/> and <xref target="I-D.ietf-mptcp-rfc6824bis"/> so far. MPTCP was designed to be compliant with the TCP standard <xref target="RFC0793"/> and introduced therefore the concept of an inital TCP flow and adding subsequent flows after sucessfull multipath negotiation on the initial path. While fulfilling its purpose, MPTCP is however fully dependent on the transmission characteristics of the communication link selected for initiating MPTCP.</t>
+      <t>
+RobE aims to overcomes the limitations of <xref target="RFC6824"/> and <xref target="I-D.ietf-mptcp-rfc6824bis"/> using one initial flow and introduces the concept of potential initial flows triggered simultaneously. Potential initial flows gives the freedom to use more than one path to request multipath connectivity and select the initial flow at a later point. Potential initial flow mechanisms and the gain of robustness and performance over the traditional MPTCP connection setup are evaluated in <xref target="RobE_slides"/> and <xref target="RobE_paper"/>.</t>
+      <t>
+Two mechanisms of RobE, a simple and an extended version are specified in this document and are further referred to as RobE_SIM and RobE_EXT. RobE_SIM is a break-before-make mechanism, guaranteeing at least the robust connection establishment, however the RobE_EXT reuses every potential inital flow request to combine it with less overhaed and accelerated multipath availability, leveraging a new MPTCP option MP_JOIN_CAP. From a standardization perspective, the RobE_SIM is fully compliant with <xref target="RFC6824"/> and <xref target="I-D.ietf-mptcp-rfc6824bis"/> and is herein more of a descriptive and procedurale nature. The RobE_EXT requires a new MPTCP option but with the potential to significantly improve the MPTCP experience.
+</t>
+      <t><xref target="table_robe_features"/> summarizes the impact of RobE_SIM and RobE_EXT compared to <xref target="RFC6824"/> and <xref target="I-D.ietf-mptcp-rfc6824bis"/>. Considered are the scenarios where the initial path (IP) is disturbed and the impact on connection setup duration for the IP and multipath (MP) availability. In particular both setup durations are a mean to significantly improve the quality of experience.
+</t>
+      <texttable style="all" title="Overview RobE features during initial connection setup" anchor="table_robe_features">
+        <ttcol>Scenario</ttcol>
+        <ttcol>MPTCP</ttcol>
+        <ttcol>MPTCP + RobE_SIM</ttcol>
+        <ttcol>MPTCP + RobE_EXT</ttcol>
+        <c>IP packet loss</c>
+        <c>Delayed connection</c>
+        <c>No impact</c>
+        <c>No impact</c>
+        <c>IP broken</c>
+        <c>No connection</c>
+        <c>No impact</c>
+        <c>No impact</c>
+        <c>IP setup duration dependency</c>
+        <c>default route</c>
+        <c>fastest path</c>
+        <c>fastest path</c>
+        <c>MP availability duration</c>
+        <c>MP_CAPABLE + MP_JOIN</c>
+        <c>MP_CAPABLE + MP_JOIN</c>
+        <c>max(MP_CAPABLE_1, MP_CAPABLE_2)</c>
+        <postamble>IP: Initial Path; MP: Multi-Path</postamble>
+      </texttable>
+      <t>
+This document presents the protocol, procedures and changes required to extend MPTCP by a robust session setup; specifically, those for signaling and setting up multiple paths ("subflows")</t>
+      <section title="Terminology" anchor="terminology">
+        <t>
+This document makes use of a number of terms that are either MPTCP-specific or have defined meaning in the context of MPTCP, as follows:
+<list style="empty"><t>
+Path:  A sequence of links between a sender and a receiver, defined
+      in this context by a 4-tuple of source and destination address/port pairs.
+</t><t>
+Subflow:  A flow of TCP segments operating over an individual path,
+      which forms part of a larger MPTCP connection.  A subflow is
+      started and terminated similar to a regular TCP connection.
+</t></list>
+</t>
+      </section>
+      <section title="Comparison of RobE and traditional MPTCP" anchor="comparison_robe_mptcp">
+        <t>
+          <figure title="MPTCP connection setup" anchor="ref-mptcp-signaling">
+            <artwork><![CDATA[
+            Host A                                  Host B
+     ------------------------                       ----------
+     Address A1    Address A2                       Address B1
+     ----------    ----------                       ----------
+         |             |                                |
+         |            SYN + MP_CAPABLE(Key-A[*])        |
+         |--------------------------------------------->|
+         |<---------------------------------------------|
+         |          SYN/ACK + MP_CAPABLE(Key-B)         |
+         |             |                                |
+         |        ACK + MP_CAPABLE(Key-A, Key-B)        |
+         |--------------------------------------------->|
+         |             |                                |
+         |             |   SYN + MP_JOIN(Token-B, R-A)  |
+         |             |------------------------------->|
+         |             |<-------------------------------|
+         |             | SYN/ACK + MP_JOIN(HMAC-B, R-B) |
+         |             |                                |
+         |             |     ACK + MP_JOIN(HMAC-A)      |
+         |             |------------------------------->|
+         |             |<-------------------------------|
+         |             |             ACK                |
+
+         [*] Key-A in the first MP-capable is related to
+             MPTCP v0 only and does not exist in MPTCP v1.
+]]></artwork>
+          </figure>
+          <figure title="MPTCP RobE_SIM and RobE_EXT connection setup" anchor="ref-mptcp-robe-sim-and-robe-ext-signaling">
+            <artwork><![CDATA[
+             Host A                                  Host B
+     ------------------------                       ----------
+     Address A1    Address A2                       Address B1
+     ----------    ----------                       ----------
+         |             |                                |
+         |            SYN + MP_CAPABLE(Key-A[*])        |
+ (SA1)   |--------------------------------------------->|  (SB1)
+         |             |    SYN + MP_CAPABLE(Key-A'[*]) |
+ (SA2)   |             |------------------------------->|  (SB2)
+         |             |                                | 
+ (SA3)   |<---------------------------------------------|  (SB3)
+         |          SYN/ACK + MP_CAPABLE(Key-B)         |
+ (SA4)   |             |<-------------------------------|  (SB4)
+         |             |   SYN/ACK + MP_CAPABLE(Key-B') |
+         |             |                                |
+         |        ACK + MP_CAPABLE(Key-A, Key-B)        |
+ (SA5)   |--------------------------------------------->|  (SB5)
+         |             |             RST                |
+ (SA6.1) |             |------------------------------->|  (SB6.1)
+RobE SIM |             |                                |
+(robust) |             |                                | 
+-------------------------------------------------------------------         
+RobE EXT |             |                                | 
+(+fast)  |             | ACK + MP_JOIN_CAP(Key-A, HMAC) |
+ (SA6.2) |             |------------------------------->|  (SB6.2)
+
+         [*] Key-A in the first MP-capable is related to
+             MPTCP v0 only and does not exist in MPTCP v1.
+]]></artwork>
+          </figure>
+        </t>
+      </section>
+      <section title="Simple RobE (RobE_SIM)" anchor="robe_sim">
+        <t>Sender only implementation, no negotiation required, robust according to <xref target="table_robe_features"/>, connection setup benefits from fastest path</t>
+      </section>
+      <section title="Extended RobE (RobE_EXT)" anchor="robe_ext">
+        <t>Extends RobE_SIM by reusing the potential initial flows. This eliminates the overhead from RobE_SIM and accelerate the transmission speed by early availablity of multiple paths. Further it relaxes the dependency an a reliable third ACK of the 3-way handshake in MPTCP v1</t>
+      </section>
+    </section>
+    <section title="Operation Overview" anchor="operation_overview">
+      <section title="MP_JOIN_CAP option" anchor="mp_join_cap">
+        <t>[Tbd]</t>
+      </section>
+      <section title="RobE_EXT negotiation" anchor="robe_ext_negotiation">
+        <t>[Tbd]</t>
+      </section>
+      <section title="States of operation" anchor="states">
+        <t>[Tbd], according to <xref target="table_robe_features"/> describe for MPTCPv0/v1 the different states which can occure</t>
+      </section>
+      <section title="Fallback mechanism" anchor="fallback">
+        <t>[Tbd], e.g. one path does not support RobE or MP-TCPv0/v1</t>
+      </section>
+      <section title="TFO support" anchor="tfo_support">
+        <t>[Tbd]</t>
+      </section>
+    </section>
+    <section title="Practical implications" anchor="practical_implications">
+      <section title="Performance compared to MP-TCP" anchor="performance_comparison">
+        <t>[Tbd]</t>
+      </section>
+    </section>
+    <section title="Security Considerations" anchor="security_considerations">
+      <t>
+   [Tbd]</t>
+    </section>
+    <section title="Acknowledgments" anchor="acks">
+      <t>[Tbd]</t>
+    </section>
+    <section title="IANA Considerations" anchor="iana">
+      <t>
+   [Tbd]
+      </t>
+    </section>
+  </middle>
+  <back>
+    <references title="Informative References">
+	&I-D.ietf-mptcp-rfc6824bis;
+	&RFC0793;
+	&RFC6824;
+	<reference anchor="RobE_paper" target="http://doi.acm.org/10.1145/3232755.3232762"><front><title>RobE: Robust Connection Establishment for Multipath TCP</title><author surname="Amend" fullname="Markus Amend">
+	</author><author surname="Rakocevic" fullname="Veselin Rakocevic">
+	</author><author surname="Matz" fullname="Andreas Philipp Matz">
+	</author><author surname="Bogenfeld" fullname="Eckard Bogenfeld">
+	</author><date day="16" month="July" year="2018"/></front><seriesInfo name="ANRW '18" value="p. 76-82"/></reference>
+	<reference anchor="RobE_slides" target="https://datatracker.ietf.org/meeting/99/materials/slides-99-mptcp-a-proposal-for-mptcp-robust-session-establishment-mptcp-robe-01"><front><title>A proposal for MPTCP Robust session Establishment (MPTCP RobE)</title><author surname="Amend" fullname="Markus Amend">
+	</author><author surname="Matz" fullname="Andreas Philipp Matz">
+	</author><author surname="Bogenfeld" fullname="Eckard Bogenfeld">
+	</author><date day="18" month="July" year="2017"/></front><seriesInfo name="IETF 99" value="Multipath TCP WG session"/></reference>
+
+	</references>
+  </back>
+</rfc>
