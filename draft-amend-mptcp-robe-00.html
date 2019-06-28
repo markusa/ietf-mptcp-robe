@@ -1,0 +1,725 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head profile="http://www.w3.org/2006/03/hcard http://dublincore.org/documents/2008/08/04/dc-html/">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+
+  <title>Multipath TCP extension for Robust Session Establishment</title>
+
+  <style type="text/css" title="Xml2Rfc (sans serif)">
+  /*<![CDATA[*/
+	  a {
+	  text-decoration: none;
+	  }
+      /* info code from SantaKlauss at http://www.madaboutstyle.com/tooltip2.html */
+      a.info {
+          /* This is the key. */
+          position: relative;
+          z-index: 24;
+          text-decoration: none;
+      }
+      a.info:hover {
+          z-index: 25;
+          color: #FFF; background-color: #900;
+      }
+      a.info span { display: none; }
+      a.info:hover span.info {
+          /* The span will display just on :hover state. */
+          display: block;
+          position: absolute;
+          font-size: smaller;
+          top: 2em; left: -5em; width: 15em;
+          padding: 2px; border: 1px solid #333;
+          color: #900; background-color: #EEE;
+          text-align: left;
+      }
+	  a.smpl {
+	  color: black;
+	  }
+	  a:hover {
+	  text-decoration: underline;
+	  }
+	  a:active {
+	  text-decoration: underline;
+	  }
+	  address {
+	  margin-top: 1em;
+	  margin-left: 2em;
+	  font-style: normal;
+	  }
+	  body {
+	  color: black;
+	  font-family: verdana, helvetica, arial, sans-serif;
+	  font-size: 10pt;
+	  max-width: 55em;
+	  
+	  }
+	  cite {
+	  font-style: normal;
+	  }
+	  dd {
+	  margin-right: 2em;
+	  }
+	  dl {
+	  margin-left: 2em;
+	  }
+	
+	  ul.empty {
+	  list-style-type: none;
+	  }
+	  ul.empty li {
+	  margin-top: .5em;
+	  }
+	  dl p {
+	  margin-left: 0em;
+	  }
+	  dt {
+	  margin-top: .5em;
+	  }
+	  h1 {
+	  font-size: 14pt;
+	  line-height: 21pt;
+	  page-break-after: avoid;
+	  }
+	  h1.np {
+	  page-break-before: always;
+	  }
+	  h1 a {
+	  color: #333333;
+	  }
+	  h2 {
+	  font-size: 12pt;
+	  line-height: 15pt;
+	  page-break-after: avoid;
+	  }
+	  h3, h4, h5, h6 {
+	  font-size: 10pt;
+	  page-break-after: avoid;
+	  }
+	  h2 a, h3 a, h4 a, h5 a, h6 a {
+	  color: black;
+	  }
+	  img {
+	  margin-left: 3em;
+	  }
+	  li {
+	  margin-left: 2em;
+	  margin-right: 2em;
+	  }
+	  ol {
+	  margin-left: 2em;
+	  margin-right: 2em;
+	  }
+	  ol p {
+	  margin-left: 0em;
+	  }
+	  p {
+	  margin-left: 2em;
+	  margin-right: 2em;
+	  }
+	  pre {
+	  margin-left: 3em;
+	  background-color: lightyellow;
+	  padding: .25em;
+	  }
+	  pre.text2 {
+	  border-style: dotted;
+	  border-width: 1px;
+	  background-color: #f0f0f0;
+	  width: 69em;
+	  }
+	  pre.inline {
+	  background-color: white;
+	  padding: 0em;
+	  }
+	  pre.text {
+	  border-style: dotted;
+	  border-width: 1px;
+	  background-color: #f8f8f8;
+	  width: 69em;
+	  }
+	  pre.drawing {
+	  border-style: solid;
+	  border-width: 1px;
+	  background-color: #f8f8f8;
+	  padding: 2em;
+	  }
+	  table {
+	  margin-left: 2em;
+	  }
+	  table.tt {
+	  vertical-align: top;
+	  }
+	  table.full {
+	  border-style: outset;
+	  border-width: 1px;
+	  }
+	  table.headers {
+	  border-style: outset;
+	  border-width: 1px;
+	  }
+	  table.tt td {
+	  vertical-align: top;
+	  }
+	  table.full td {
+	  border-style: inset;
+	  border-width: 1px;
+	  }
+	  table.tt th {
+	  vertical-align: top;
+	  }
+	  table.full th {
+	  border-style: inset;
+	  border-width: 1px;
+	  }
+	  table.headers th {
+	  border-style: none none inset none;
+	  border-width: 1px;
+	  }
+	  table.left {
+	  margin-right: auto;
+	  }
+	  table.right {
+	  margin-left: auto;
+	  }
+	  table.center {
+	  margin-left: auto;
+	  margin-right: auto;
+	  }
+	  caption {
+	  caption-side: bottom;
+	  font-weight: bold;
+	  font-size: 9pt;
+	  margin-top: .5em;
+	  }
+	
+	  table.header {
+	  border-spacing: 1px;
+	  width: 95%;
+	  font-size: 10pt;
+	  color: white;
+	  }
+	  td.top {
+	  vertical-align: top;
+	  }
+	  td.topnowrap {
+	  vertical-align: top;
+	  white-space: nowrap; 
+	  }
+	  table.header td {
+	  background-color: gray;
+	  width: 50%;
+	  }
+	  table.header a {
+	  color: white;
+	  }
+	  td.reference {
+	  vertical-align: top;
+	  white-space: nowrap;
+	  padding-right: 1em;
+	  }
+	  thead {
+	  display:table-header-group;
+	  }
+	  ul.toc, ul.toc ul {
+	  list-style: none;
+	  margin-left: 1.5em;
+	  margin-right: 0em;
+	  padding-left: 0em;
+	  }
+	  ul.toc li {
+	  line-height: 150%;
+	  font-weight: bold;
+	  font-size: 10pt;
+	  margin-left: 0em;
+	  margin-right: 0em;
+	  }
+	  ul.toc li li {
+	  line-height: normal;
+	  font-weight: normal;
+	  font-size: 9pt;
+	  margin-left: 0em;
+	  margin-right: 0em;
+	  }
+	  li.excluded {
+	  font-size: 0pt;
+	  }
+	  ul p {
+	  margin-left: 0em;
+	  }
+	
+	  .comment {
+	  background-color: yellow;
+	  }
+	  .center {
+	  text-align: center;
+	  }
+	  .error {
+	  color: red;
+	  font-style: italic;
+	  font-weight: bold;
+	  }
+	  .figure {
+	  font-weight: bold;
+	  text-align: center;
+	  font-size: 9pt;
+	  }
+	  .filename {
+	  color: #333333;
+	  font-weight: bold;
+	  font-size: 12pt;
+	  line-height: 21pt;
+	  text-align: center;
+	  }
+	  .fn {
+	  font-weight: bold;
+	  }
+	  .hidden {
+	  display: none;
+	  }
+	  .left {
+	  text-align: left;
+	  }
+	  .right {
+	  text-align: right;
+	  }
+	  .title {
+	  color: #990000;
+	  font-size: 18pt;
+	  line-height: 18pt;
+	  font-weight: bold;
+	  text-align: center;
+	  margin-top: 36pt;
+	  }
+	  .vcardline {
+	  display: block;
+	  }
+	  .warning {
+	  font-size: 14pt;
+	  background-color: yellow;
+	  }
+	
+	
+	  @media print {
+	  .noprint {
+		display: none;
+	  }
+	
+	  a {
+		color: black;
+		text-decoration: none;
+	  }
+	
+	  table.header {
+		width: 90%;
+	  }
+	
+	  td.header {
+		width: 50%;
+		color: black;
+		background-color: white;
+		vertical-align: top;
+		font-size: 12pt;
+	  }
+	
+	  ul.toc a::after {
+		content: leader('.') target-counter(attr(href), page);
+	  }
+	
+	  ul.ind li li a {
+		content: target-counter(attr(href), page);
+	  }
+	
+	  .print2col {
+		column-count: 2;
+		-moz-column-count: 2;
+		column-fill: auto;
+	  }
+	  }
+	
+	  @page {
+	  @top-left {
+		   content: "Internet-Draft"; 
+	  } 
+	  @top-right {
+		   content: "December 2010"; 
+	  } 
+	  @top-center {
+		   content: "Abbreviated Title";
+	  } 
+	  @bottom-left {
+		   content: "Doe"; 
+	  } 
+	  @bottom-center {
+		   content: "Expires June 2011"; 
+	  } 
+	  @bottom-right {
+		   content: "[Page " counter(page) "]"; 
+	  } 
+	  }
+	
+	  @page:first { 
+		@top-left {
+		  content: normal;
+		}
+		@top-right {
+		  content: normal;
+		}
+		@top-center {
+		  content: normal;
+		}
+	  }
+  /*]]>*/
+  </style>
+
+  <link href="#rfc.toc" rel="Contents">
+<link href="#rfc.section.1" rel="Chapter" title="1 Introduction">
+<link href="#rfc.section.1.1" rel="Chapter" title="1.1 Terminology">
+<link href="#rfc.section.1.2" rel="Chapter" title="1.2 Comparison of RobE and traditional MPTCP">
+<link href="#rfc.section.1.3" rel="Chapter" title="1.3 Simple RobE (RobE_SIM)">
+<link href="#rfc.section.1.4" rel="Chapter" title="1.4 Extended RobE (RobE_EXT)">
+<link href="#rfc.section.2" rel="Chapter" title="2 Operation Overview">
+<link href="#rfc.section.2.1" rel="Chapter" title="2.1 MP_JOIN_CAP option">
+<link href="#rfc.section.2.2" rel="Chapter" title="2.2 RobE_EXT negotiation">
+<link href="#rfc.section.2.3" rel="Chapter" title="2.3 States of operation">
+<link href="#rfc.section.2.4" rel="Chapter" title="2.4 Fallback mechanism">
+<link href="#rfc.section.2.5" rel="Chapter" title="2.5 TFO support">
+<link href="#rfc.section.3" rel="Chapter" title="3 Practical implications">
+<link href="#rfc.section.3.1" rel="Chapter" title="3.1 Performance compared to MP-TCP">
+<link href="#rfc.section.4" rel="Chapter" title="4 Security Considerations">
+<link href="#rfc.section.5" rel="Chapter" title="5 Acknowledgments">
+<link href="#rfc.section.6" rel="Chapter" title="6 IANA Considerations">
+<link href="#rfc.references" rel="Chapter" title="7 Informative References">
+<link href="#rfc.authors" rel="Chapter">
+
+
+  <meta name="generator" content="xml2rfc version 2.22.3 - https://tools.ietf.org/tools/xml2rfc" />
+  <link rel="schema.dct" href="http://purl.org/dc/terms/" />
+
+  <meta name="dct.creator" content="Amend, M." />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-amend-mptcp-robe-00" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-06-28" />
+  <meta name="dct.abstract" content="Multipath TCP extends the plain, singlepath limited, TCP towards the capability of multipath transmission. This greatly improves the reliability and performance of TCP communication. For backwards compatiblity reason the Multipath TCP was designed to setup successfully an inital path first, after which subsequent paths can be added for multipath transmission. For that reason the Multipath TCP has the same limitations as the plain TCP during connection setup, in case the selected path is not functional.RobE provides the ability to simultaneously use multiple paths for connection setup. This document presents with RobE a set of extensions to Multipath TCP to overcome its singlepath limitation during connection initialisation and extends it to a full fledged multipath protocol. RobE ensures connecitivity if at least one functional path out of a bunch of paths is given and offers beside that the opportunity to significantly improve loading times of Internet services." />
+  <meta name="description" content="Multipath TCP extends the plain, singlepath limited, TCP towards the capability of multipath transmission. This greatly improves the reliability and performance of TCP communication. For backwards compatiblity reason the Multipath TCP was designed to setup successfully an inital path first, after which subsequent paths can be added for multipath transmission. For that reason the Multipath TCP has the same limitations as the plain TCP during connection setup, in case the selected path is not functional.RobE provides the ability to simultaneously use multiple paths for connection setup. This document presents with RobE a set of extensions to Multipath TCP to overcome its singlepath limitation during connection initialisation and extends it to a full fledged multipath protocol. RobE ensures connecitivity if at least one functional path out of a bunch of paths is given and offers beside that the opportunity to significantly improve loading times of Internet services." />
+
+</head>
+
+<body>
+
+  <table class="header">
+    <tbody>
+    
+    	<tr>
+<td class="left">Multipath TCP Working Group</td>
+<td class="right">M. Amend</td>
+</tr>
+<tr>
+<td class="left">Internet-Draft</td>
+<td class="right">Deutsche Telekom</td>
+</tr>
+<tr>
+<td class="left">Intended status: Experimental</td>
+<td class="right">June 28, 2019</td>
+</tr>
+<tr>
+<td class="left">Expires: December 30, 2019</td>
+<td class="right"></td>
+</tr>
+
+    	
+    </tbody>
+  </table>
+
+  <p class="title">Multipath TCP extension for Robust Session Establishment<br />
+  <span class="filename">draft-amend-mptcp-robe-00</span></p>
+  
+  <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1>
+<p>Multipath TCP extends the plain, singlepath limited, TCP towards the capability of multipath transmission. This greatly improves the reliability and performance of TCP communication. For backwards compatiblity reason the Multipath TCP was designed to setup successfully an inital path first, after which subsequent paths can be added for multipath transmission. For that reason the Multipath TCP has the same limitations as the plain TCP during connection setup, in case the selected path is not functional.</p>
+<p>RobE provides the ability to simultaneously use multiple paths for connection setup. This document presents with RobE a set of extensions to Multipath TCP to overcome its singlepath limitation during connection initialisation and extends it to a full fledged multipath protocol. RobE ensures connecitivity if at least one functional path out of a bunch of paths is given and offers beside that the opportunity to significantly improve loading times of Internet services.</p>
+<h1 id="rfc.status"><a href="#rfc.status">Status of This Memo</a></h1>
+<p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
+<p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
+<p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
+<p>This Internet-Draft will expire on December 30, 2019.</p>
+<h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
+<p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
+<p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
+
+  
+  <hr class="noprint" />
+  <h1 class="np" id="rfc.toc"><a href="#rfc.toc">Table of Contents</a></h1>
+  <ul class="toc">
+
+  	<li>1.   <a href="#rfc.section.1">Introduction</a>
+</li>
+<ul><li>1.1.   <a href="#rfc.section.1.1">Terminology</a>
+</li>
+<li>1.2.   <a href="#rfc.section.1.2">Comparison of RobE and traditional MPTCP</a>
+</li>
+<li>1.3.   <a href="#rfc.section.1.3">Simple RobE (RobE_SIM)</a>
+</li>
+<li>1.4.   <a href="#rfc.section.1.4">Extended RobE (RobE_EXT)</a>
+</li>
+</ul><li>2.   <a href="#rfc.section.2">Operation Overview</a>
+</li>
+<ul><li>2.1.   <a href="#rfc.section.2.1">MP_JOIN_CAP option</a>
+</li>
+<li>2.2.   <a href="#rfc.section.2.2">RobE_EXT negotiation</a>
+</li>
+<li>2.3.   <a href="#rfc.section.2.3">States of operation</a>
+</li>
+<li>2.4.   <a href="#rfc.section.2.4">Fallback mechanism</a>
+</li>
+<li>2.5.   <a href="#rfc.section.2.5">TFO support</a>
+</li>
+</ul><li>3.   <a href="#rfc.section.3">Practical implications</a>
+</li>
+<ul><li>3.1.   <a href="#rfc.section.3.1">Performance compared to MP-TCP</a>
+</li>
+</ul><li>4.   <a href="#rfc.section.4">Security Considerations</a>
+</li>
+<li>5.   <a href="#rfc.section.5">Acknowledgments</a>
+</li>
+<li>6.   <a href="#rfc.section.6">IANA Considerations</a>
+</li>
+<li>7.   <a href="#rfc.references">Informative References</a>
+</li>
+<li><a href="#rfc.authors">Author's Address</a>
+</li>
+
+
+  </ul>
+
+  <h1 id="rfc.section.1">
+<a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a>
+</h1>
+<p id="rfc.section.1.p.1">Multipath TCP Robust session Establishment (MPTCP RobE) is a set of extensions to regular MPTCP <a href="#RFC6824" class="xref">[RFC6824]</a> and its next upcoming version <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>, which releases single path limitations during the initial connection setup. Several scenarios requires and benefit from a reliable and in time connection setup which is not covered by <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> so far. MPTCP was designed to be compliant with the TCP standard <a href="#RFC0793" class="xref">[RFC0793]</a> and introduced therefore the concept of an inital TCP flow and adding subsequent flows after sucessfull multipath negotiation on the initial path. While fulfilling its purpose, MPTCP is however fully dependent on the transmission characteristics of the communication link selected for initiating MPTCP.</p>
+<p id="rfc.section.1.p.2">RobE aims to overcomes the limitations of <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> using one initial flow and introduces the concept of potential initial flows triggered simultaneously. Potential initial flows gives the freedom to use more than one path to request multipath connectivity and select the initial flow at a later point. Potential initial flow mechanisms and the gain of robustness and performance over the traditional MPTCP connection setup are evaluated in <a href="#RobE_slides" class="xref">[RobE_slides]</a> and <a href="#RobE_paper" class="xref">[RobE_paper]</a>.</p>
+<p id="rfc.section.1.p.3">Two mechanisms of RobE, a simple and an extended version are specified in this document and are further referred to as RobE_SIM and RobE_EXT. RobE_SIM is a break-before-make mechanism, guaranteeing at least the robust connection establishment, however the RobE_EXT reuses every potential inital flow request to combine it with less overhaed and accelerated multipath availability, leveraging a new MPTCP option MP_JOIN_CAP. From a standardization perspective, the RobE_SIM is fully compliant with <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> and is herein more of a descriptive and procedurale nature. The RobE_EXT requires a new MPTCP option but with the potential to significantly improve the MPTCP experience.  </p>
+<p><a href="#table_robe_features" class="xref">Table 1</a> summarizes the impact of RobE_SIM and RobE_EXT compared to <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>. Considered are the scenarios where the initial path (IP) is disturbed and the impact on connection setup duration for the IP and multipath (MP) availability. In particular both setup durations are a mean to significantly improve the quality of experience.  </p>
+<div id="rfc.table.1"></div>
+<div id="table_robe_features"></div>
+<table cellpadding="3" cellspacing="0" class="tt all center">
+<caption>Overview RobE features during initial connection setup</caption>
+<thead><tr>
+<th class="left">Scenario</th>
+<th class="left">MPTCP</th>
+<th class="left">MPTCP + RobE_SIM</th>
+<th class="left">MPTCP + RobE_EXT</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="left">IP packet loss</td>
+<td class="left">Delayed connection</td>
+<td class="left">No impact</td>
+<td class="left">No impact</td>
+</tr>
+<tr>
+<td class="left">IP broken</td>
+<td class="left">No connection</td>
+<td class="left">No impact</td>
+<td class="left">No impact</td>
+</tr>
+<tr>
+<td class="left">IP setup duration dependency</td>
+<td class="left">default route</td>
+<td class="left">fastest path</td>
+<td class="left">fastest path</td>
+</tr>
+<tr>
+<td class="left">MP availability duration</td>
+<td class="left">MP_CAPABLE + MP_JOIN</td>
+<td class="left">MP_CAPABLE + MP_JOIN</td>
+<td class="left">max(MP_CAPABLE_1, MP_CAPABLE_2)</td>
+</tr>
+</tbody>
+</table>
+<p>IP: Initial Path; MP: Multi-Path</p>
+<p id="rfc.section.1.p.5">This document presents the protocol, procedures and changes required to extend MPTCP by a robust session setup; specifically, those for signaling and setting up multiple paths ("subflows")</p>
+<h1 id="rfc.section.1.1">
+<a href="#rfc.section.1.1">1.1.</a> <a href="#terminology" id="terminology">Terminology</a>
+</h1>
+<p id="rfc.section.1.1.p.1">This document makes use of a number of terms that are either MPTCP-specific or have defined meaning in the context of MPTCP, as follows: </p>
+
+<ul class="empty">
+<li>Path:  A sequence of links between a sender and a receiver, defined in this context by a 4-tuple of source and destination address/port pairs.  </li>
+<li>Subflow:  A flow of TCP segments operating over an individual path, which forms part of a larger MPTCP connection.  A subflow is started and terminated similar to a regular TCP connection.  </li>
+</ul>
+
+<p> </p>
+<h1 id="rfc.section.1.2">
+<a href="#rfc.section.1.2">1.2.</a> <a href="#comparison_robe_mptcp" id="comparison_robe_mptcp">Comparison of RobE and traditional MPTCP</a>
+</h1>
+<div id="rfc.figure.1"></div>
+<div id="ref-mptcp-signaling"></div>
+<pre>
+            Host A                                  Host B
+     ------------------------                       ----------
+     Address A1    Address A2                       Address B1
+     ----------    ----------                       ----------
+         |             |                                |
+         |            SYN + MP_CAPABLE(Key-A[*])        |
+         |---------------------------------------------&gt;|
+         |&lt;---------------------------------------------|
+         |          SYN/ACK + MP_CAPABLE(Key-B)         |
+         |             |                                |
+         |        ACK + MP_CAPABLE(Key-A, Key-B)        |
+         |---------------------------------------------&gt;|
+         |             |                                |
+         |             |   SYN + MP_JOIN(Token-B, R-A)  |
+         |             |-------------------------------&gt;|
+         |             |&lt;-------------------------------|
+         |             | SYN/ACK + MP_JOIN(HMAC-B, R-B) |
+         |             |                                |
+         |             |     ACK + MP_JOIN(HMAC-A)      |
+         |             |-------------------------------&gt;|
+         |             |&lt;-------------------------------|
+         |             |             ACK                |
+
+         [*] Key-A in the first MP-capable is related to
+             MPTCP v0 only and does not exist in MPTCP v1.
+</pre>
+<p class="figure">Figure 1: MPTCP connection setup</p>
+<div id="rfc.figure.2"></div>
+<div id="ref-mptcp-robe-sim-and-robe-ext-signaling"></div>
+<pre>
+             Host A                                  Host B
+     ------------------------                       ----------
+     Address A1    Address A2                       Address B1
+     ----------    ----------                       ----------
+         |             |                                |
+         |            SYN + MP_CAPABLE(Key-A[*])        |
+ (SA1)   |---------------------------------------------&gt;|  (SB1)
+         |             |    SYN + MP_CAPABLE(Key-A'[*]) |
+ (SA2)   |             |-------------------------------&gt;|  (SB2)
+         |             |                                | 
+ (SA3)   |&lt;---------------------------------------------|  (SB3)
+         |          SYN/ACK + MP_CAPABLE(Key-B)         |
+ (SA4)   |             |&lt;-------------------------------|  (SB4)
+         |             |   SYN/ACK + MP_CAPABLE(Key-B') |
+         |             |                                |
+         |        ACK + MP_CAPABLE(Key-A, Key-B)        |
+ (SA5)   |---------------------------------------------&gt;|  (SB5)
+         |             |             RST                |
+ (SA6.1) |             |-------------------------------&gt;|  (SB6.1)
+RobE SIM |             |                                |
+(robust) |             |                                | 
+-------------------------------------------------------------------         
+RobE EXT |             |                                | 
+(+fast)  |             | ACK + MP_JOIN_CAP(Key-A, HMAC) |
+ (SA6.2) |             |-------------------------------&gt;|  (SB6.2)
+
+         [*] Key-A in the first MP-capable is related to
+             MPTCP v0 only and does not exist in MPTCP v1.
+</pre>
+<p class="figure">Figure 2: MPTCP RobE_SIM and RobE_EXT connection setup</p>
+<p></p>
+<h1 id="rfc.section.1.3">
+<a href="#rfc.section.1.3">1.3.</a> <a href="#robe_sim" id="robe_sim">Simple RobE (RobE_SIM)</a>
+</h1>
+<p id="rfc.section.1.3.p.1">Sender only implementation, no negotiation required, robust according to <a href="#table_robe_features" class="xref">Table 1</a>, connection setup benefits from fastest path</p>
+<h1 id="rfc.section.1.4">
+<a href="#rfc.section.1.4">1.4.</a> <a href="#robe_ext" id="robe_ext">Extended RobE (RobE_EXT)</a>
+</h1>
+<p id="rfc.section.1.4.p.1">Extends RobE_SIM by reusing the potential initial flows. This eliminates the overhead from RobE_SIM and accelerate the transmission speed by early availablity of multiple paths. Further it relaxes the dependency an a reliable third ACK of the 3-way handshake in MPTCP v1</p>
+<h1 id="rfc.section.2">
+<a href="#rfc.section.2">2.</a> <a href="#operation_overview" id="operation_overview">Operation Overview</a>
+</h1>
+<h1 id="rfc.section.2.1">
+<a href="#rfc.section.2.1">2.1.</a> <a href="#mp_join_cap" id="mp_join_cap">MP_JOIN_CAP option</a>
+</h1>
+<p id="rfc.section.2.1.p.1">[Tbd]</p>
+<h1 id="rfc.section.2.2">
+<a href="#rfc.section.2.2">2.2.</a> <a href="#robe_ext_negotiation" id="robe_ext_negotiation">RobE_EXT negotiation</a>
+</h1>
+<p id="rfc.section.2.2.p.1">[Tbd]</p>
+<h1 id="rfc.section.2.3">
+<a href="#rfc.section.2.3">2.3.</a> <a href="#states" id="states">States of operation</a>
+</h1>
+<p id="rfc.section.2.3.p.1">[Tbd], according to <a href="#table_robe_features" class="xref">Table 1</a> describe for MPTCPv0/v1 the different states which can occure</p>
+<h1 id="rfc.section.2.4">
+<a href="#rfc.section.2.4">2.4.</a> <a href="#fallback" id="fallback">Fallback mechanism</a>
+</h1>
+<p id="rfc.section.2.4.p.1">[Tbd], e.g. one path does not support RobE or MP-TCPv0/v1</p>
+<h1 id="rfc.section.2.5">
+<a href="#rfc.section.2.5">2.5.</a> <a href="#tfo_support" id="tfo_support">TFO support</a>
+</h1>
+<p id="rfc.section.2.5.p.1">[Tbd]</p>
+<h1 id="rfc.section.3">
+<a href="#rfc.section.3">3.</a> <a href="#practical_implications" id="practical_implications">Practical implications</a>
+</h1>
+<h1 id="rfc.section.3.1">
+<a href="#rfc.section.3.1">3.1.</a> <a href="#performance_comparison" id="performance_comparison">Performance compared to MP-TCP</a>
+</h1>
+<p id="rfc.section.3.1.p.1">[Tbd]</p>
+<h1 id="rfc.section.4">
+<a href="#rfc.section.4">4.</a> <a href="#security_considerations" id="security_considerations">Security Considerations</a>
+</h1>
+<p id="rfc.section.4.p.1">[Tbd]</p>
+<h1 id="rfc.section.5">
+<a href="#rfc.section.5">5.</a> <a href="#acks" id="acks">Acknowledgments</a>
+</h1>
+<p id="rfc.section.5.p.1">[Tbd]</p>
+<h1 id="rfc.section.6">
+<a href="#rfc.section.6">6.</a> <a href="#iana" id="iana">IANA Considerations</a>
+</h1>
+<p id="rfc.section.6.p.1">[Tbd] </p>
+<h1 id="rfc.references">
+<a href="#rfc.references">7.</a> Informative References</h1>
+<table><tbody>
+<tr>
+<td class="reference"><b id="I-D.ietf-mptcp-rfc6824bis">[I-D.ietf-mptcp-rfc6824bis]</b></td>
+<td class="top">
+<a>Ford, A.</a>, <a>Raiciu, C.</a>, <a>Handley, M.</a>, <a>Bonaventure, O.</a> and <a>C. Paasch</a>, "<a href="https://tools.ietf.org/html/draft-ietf-mptcp-rfc6824bis-18">TCP Extensions for Multipath Operation with Multiple Addresses</a>", Internet-Draft draft-ietf-mptcp-rfc6824bis-18, June 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC0793">[RFC0793]</b></td>
+<td class="top">
+<a>Postel, J.</a>, "<a href="https://tools.ietf.org/html/rfc793">Transmission Control Protocol</a>", STD 7, RFC 793, DOI 10.17487/RFC0793, September 1981.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6824">[RFC6824]</b></td>
+<td class="top">
+<a>Ford, A.</a>, <a>Raiciu, C.</a>, <a>Handley, M.</a> and <a>O. Bonaventure</a>, "<a href="https://tools.ietf.org/html/rfc6824">TCP Extensions for Multipath Operation with Multiple Addresses</a>", RFC 6824, DOI 10.17487/RFC6824, January 2013.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RobE_paper">[RobE_paper]</b></td>
+<td class="top">
+<a>Amend, M.</a>, <a>Rakocevic, V.</a>, <a>Matz, A. P.</a> and <a>E. Bogenfeld</a>, "<a href="http://doi.acm.org/10.1145/3232755.3232762">RobE: Robust Connection Establishment for Multipath TCP</a>", ANRW '18 p. 76-82, July 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RobE_slides">[RobE_slides]</b></td>
+<td class="top">
+<a>Amend, M.</a>, <a>Matz, A. P.</a> and <a>E. Bogenfeld</a>, "<a href="https://datatracker.ietf.org/meeting/99/materials/slides-99-mptcp-a-proposal-for-mptcp-robust-session-establishment-mptcp-robe-01">A proposal for MPTCP Robust session Establishment (MPTCP RobE)</a>", IETF 99 Multipath TCP WG session, July 2017.</td>
+</tr>
+</tbody></table>
+<h1 id="rfc.authors"><a href="#rfc.authors">Author's Address</a></h1>
+<div class="avoidbreak">
+  <address class="vcard">
+	<span class="vcardline">
+	  <span class="fn">Markus Amend</span> 
+	  <span class="n hidden">
+		<span class="family-name">Amend</span>
+	  </span>
+	</span>
+	<span class="org vcardline">Deutsche Telekom</span>
+	<span class="adr">
+	  <span class="vcardline">Deutsche-Telekom-Allee 7</span>
+<span class="vcardline">64295 Darmstadt</span>
+<span class="vcardline">Germany</span>
+
+	  <span class="vcardline">
+		<span class="locality"></span> 
+		<span class="region"></span>
+		<span class="code"></span>
+	  </span>
+	  <span class="country-name vcardline"></span>
+	</span>
+	<span class="vcardline">EMail: <a href="mailto:Markus.Amend@telekom.de">Markus.Amend@telekom.de</a></span>
+
+  </address>
+</div>
+
+</body>
+</html>
