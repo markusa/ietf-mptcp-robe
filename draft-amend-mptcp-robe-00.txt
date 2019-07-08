@@ -4,8 +4,8 @@
 
 Multipath TCP Working Group                                     M. Amend
 Internet-Draft                                          Deutsche Telekom
-Intended status: Experimental                              June 28, 2019
-Expires: December 30, 2019
+Intended status: Experimental                               July 8, 2019
+Expires: January 9, 2020
 
 
         Multipath TCP extension for Robust Session Establishment
@@ -46,16 +46,16 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 30, 2019.
+   This Internet-Draft will expire on January 9, 2020.
 
 
 
 
 
 
-Amend                   Expires December 30, 2019               [Page 1]
+Amend                    Expires January 9, 2020                [Page 1]
 
-Internet-Draft                 MPTCP RobE                      June 2019
+Internet-Draft                 MPTCP RobE                      July 2019
 
 
 Copyright Notice
@@ -84,15 +84,17 @@ Table of Contents
      2.1.  MP_JOIN_CAP option  . . . . . . . . . . . . . . . . . . .   7
      2.2.  RobE_EXT negotiation  . . . . . . . . . . . . . . . . . .   7
      2.3.  States of operation . . . . . . . . . . . . . . . . . . .   7
-     2.4.  Fallback mechanism  . . . . . . . . . . . . . . . . . . .   7
-     2.5.  TFO support . . . . . . . . . . . . . . . . . . . . . . .   7
-   3.  Practical implications  . . . . . . . . . . . . . . . . . . .   7
-     3.1.  Performance compared to MP-TCP  . . . . . . . . . . . . .   7
-   4.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
-   5.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .   7
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
-   7.  Informative References  . . . . . . . . . . . . . . . . . . .   7
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   8
+       2.3.1.  RobE_SIM  . . . . . . . . . . . . . . . . . . . . . .   7
+       2.3.2.  RobE_EXT  . . . . . . . . . . . . . . . . . . . . . .   7
+     2.4.  Fallback mechanism  . . . . . . . . . . . . . . . . . . .   8
+     2.5.  TFO support . . . . . . . . . . . . . . . . . . . . . . .   8
+   3.  Practical implications  . . . . . . . . . . . . . . . . . . .   9
+     3.1.  Performance compared to MP-TCP  . . . . . . . . . . . . .   9
+   4.  Security Considerations . . . . . . . . . . . . . . . . . . .   9
+   5.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .   9
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
+   7.  Informative References  . . . . . . . . . . . . . . . . . . .   9
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  10
 
 1.  Introduction
 
@@ -104,16 +106,16 @@ Table of Contents
    covered by [RFC6824] and [I-D.ietf-mptcp-rfc6824bis] so far.  MPTCP
    was designed to be compliant with the TCP standard [RFC0793] and
    introduced therefore the concept of an inital TCP flow and adding
+
+
+
+Amend                    Expires January 9, 2020                [Page 2]
+
+Internet-Draft                 MPTCP RobE                      July 2019
+
+
    subsequent flows after sucessfull multipath negotiation on the
    initial path.  While fulfilling its purpose, MPTCP is however fully
-
-
-
-Amend                   Expires December 30, 2019               [Page 2]
-
-Internet-Draft                 MPTCP RobE                      June 2019
-
-
    dependent on the transmission characteristics of the communication
    link selected for initiating MPTCP.
 
@@ -163,11 +165,9 @@ Internet-Draft                 MPTCP RobE                      June 2019
 
 
 
-
-
-Amend                   Expires December 30, 2019               [Page 3]
+Amend                    Expires January 9, 2020                [Page 3]
 
-Internet-Draft                 MPTCP RobE                      June 2019
+Internet-Draft                 MPTCP RobE                      July 2019
 
 
    +----------------+--------------+--------------+--------------------+
@@ -212,19 +212,22 @@ Internet-Draft                 MPTCP RobE                      June 2019
 
 1.2.  Comparison of RobE and traditional MPTCP
 
+   Section has DRAFT status
+
+   Figure 1 shows the traditional way of MPTCP handshaking with a
+   MP_CAPABLE first, followed when successful by additional flows
+   engaging MP_JOIN.  MPTCP v0 [RFC6824] and MPTCP v1
 
 
 
 
-
-
-
-
-
-Amend                   Expires December 30, 2019               [Page 4]
+Amend                    Expires January 9, 2020                [Page 4]
 
-Internet-Draft                 MPTCP RobE                      June 2019
+Internet-Draft                 MPTCP RobE                      July 2019
 
+
+   [I-D.ietf-mptcp-rfc6824bis] differ in that a Key-A is sent with the
+   first MP_CAPABLE or not.
 
                Host A                                  Host B
         ------------------------                       ----------
@@ -254,6 +257,12 @@ Internet-Draft                 MPTCP RobE                      June 2019
 
                      Figure 1: MPTCP connection setup
 
+   Figure 2 changes the concept of the subsequent establishment in
+   Figure 1 towards simultaneous requests (potential initial flows).
+   For that, on several paths the MP_CAPABLE is used, like independent
+   initial flow establishment.  The final decision which path is
+   selected as the main one and the handling of the remaining flow(s)
+   differs in SA6.1 when RobE_SIM is applied or instead SA6.2 RobE_EXT.
 
 
 
@@ -268,18 +277,9 @@ Internet-Draft                 MPTCP RobE                      June 2019
 
 
 
-
-
-
-
-
-
-
-
-
-Amend                   Expires December 30, 2019               [Page 5]
+Amend                    Expires January 9, 2020                [Page 5]
 
-Internet-Draft                 MPTCP RobE                      June 2019
+Internet-Draft                 MPTCP RobE                      July 2019
 
 
                 Host A                                  Host B
@@ -323,7 +323,7 @@ Internet-Draft                 MPTCP RobE                      June 2019
    Extends RobE_SIM by reusing the potential initial flows.  This
    eliminates the overhead from RobE_SIM and accelerate the transmission
    speed by early availablity of multiple paths.  Further it relaxes the
-   dependency an a reliable third ACK of the 3-way handshake in MPTCP v1
+   dependency on a reliable third ACK of the 3-way handshake in MPTCP v1
 
 2.  Operation Overview
 
@@ -333,14 +333,36 @@ Internet-Draft                 MPTCP RobE                      June 2019
 
 
 
-Amend                   Expires December 30, 2019               [Page 6]
+Amend                    Expires January 9, 2020                [Page 6]
 
-Internet-Draft                 MPTCP RobE                      June 2019
+Internet-Draft                 MPTCP RobE                      July 2019
 
 
 2.1.  MP_JOIN_CAP option
 
-   [Tbd]
+                      1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +---------------+---------------+-------+-------+---------------+
+   |     Kind      |    Length     |Subtype|       |    ADDR_ID    |
+   +---------------+---------------+-------+-------+---------------+
+   |                    Sender's Key-A (64 bits)                   |
+   |                                                               |
+   |                                                               |
+   +---------------------------------------------------------------+
+   |                        HMAC (>=96 bits)                       |
+   |                                                               |
+   |                                                               |
+   :                                                               :
+   +---------------------------------------------------------------+
+    Key-B_fast_hash = crc16(Key-B) & 0x3FF          -> (10bit)
+    HMAC_keys =  HMAC(Key-A+Key-B+Key-B')           -> (>=96bit)
+    HMAC =  (HMAC_keys & ~0x3FF) | Key-B_fast_hash  -> (size HMAC_keys)
+
+
+                           Figure 3: MP_JOIN_CAP
+
+   The ADDR_ID field of the MP_JOIN_CAP in Figure 3 is set according to
+   the definition of MP_JOIN in [RFC6824] [I-D.ietf-mptcp-rfc6824bis].
 
 2.2.  RobE_EXT negotiation
 
@@ -349,7 +371,65 @@ Internet-Draft                 MPTCP RobE                      June 2019
 2.3.  States of operation
 
    [Tbd], according to Table 1 describe for MPTCPv0/v1 the different
-   states which can occure
+   states which can occure; Section has DRAFT status
+
+2.3.1.  RobE_SIM
+
+   [Tbd]
+
+2.3.2.  RobE_EXT
+
+   1.  In the flow diagram Figure 2, A1<->B1 is assumed to be the
+       initial flow.  A2<->B1 shall be recycled and the ACK is sent with
+       MP_JOIN_CAP.  Furthermore, the MP_CAPABLE arrives first at Host B
+       (SB5) and the MP_JOIN_CAP afterwards (SB6.2).  When the
+       MP_JOIN_CAP is received, Host B has to iterate over the
+       connection list once (like MP_JOIN) and check for Key-A
+       availability.  If a Key-A connection is found, this one is
+
+
+
+Amend                    Expires January 9, 2020                [Page 7]
+
+Internet-Draft                 MPTCP RobE                      July 2019
+
+
+       validated against the HMAC value.  The validation has two
+       reasons: first, several Key-A can exist, because different hosts
+       may choose the same Key-A by accident.  Furthermore, no one can
+       join a connection by just recording/brute-forcing Key-A and
+       duplicating the request.
+
+   2.  Like above, but MP_JOIN_CAP arrives before last MP_CAPABLE at
+       Host B
+
+       *  [I-D.ietf-mptcp-rfc6824bis]; Based on Key-A, Host B will
+          iterate over the connection list, but it will not find a
+          match, because Key-A of the previous selected initial flow
+          (SA3, SA5) has not arrived yet.  So it will continue with a
+          fast iteration only over the connections which are still in
+          establishment phase using the 10 bit Key-B fast hash
+          (crc16(Key-B) & 0x3FF).  If it matches against a (precomputed)
+          existing Key-B_fast_hash in the connection list, it will
+          validate the request using the HMAC(Key-A+B+B') to ensure
+          legitimation.  If successful, both, the initial flow and the
+          MP_JOIN_CAP flow, can be immediately established.  This is
+          true, because without the knowledge of Key-B, Host A could not
+          calculate the HMAC.  So it is clear, that Host A had received
+          the SYN/ACK (SB3).  This also mitigates the exchange of a
+          reliable ACK during the handshake process.  MPTCP sends the
+          Key-A only with the last ACK and therefore prevents subsequent
+          flow establishment until successful reception at Host B.
+          Using RobE_EXT, the reception of a MP_JOIN_CAP
+          ([I-D.ietf-mptcp-rfc6824bis]) is sufficient to establish both,
+          the path carrying Key-B and Key-B'.
+
+       *  [RFC6824]; Can match based on Key-A, same effort as for a MP
+          JOIN.
+
+   3.  A2<->B1 is selected as initial flow, because the respective SYN/
+       ACK returns earlier at Host A.  It is the same as above, just the
+       other way round.
 
 2.4.  Fallback mechanism
 
@@ -358,6 +438,17 @@ Internet-Draft                 MPTCP RobE                      June 2019
 2.5.  TFO support
 
    [Tbd]
+
+
+
+
+
+
+
+Amend                    Expires January 9, 2020                [Page 8]
+
+Internet-Draft                 MPTCP RobE                      July 2019
+
 
 3.  Practical implications
 
@@ -385,15 +476,6 @@ Internet-Draft                 MPTCP RobE                      June 2019
               Multiple Addresses", draft-ietf-mptcp-rfc6824bis-18 (work
               in progress), June 2019.
 
-
-
-
-
-Amend                   Expires December 30, 2019               [Page 7]
-
-Internet-Draft                 MPTCP RobE                      June 2019
-
-
    [RFC0793]  Postel, J., "Transmission Control Protocol", STD 7,
               RFC 793, DOI 10.17487/RFC0793, September 1981,
               <https://www.rfc-editor.org/info/rfc793>.
@@ -416,6 +498,13 @@ Internet-Draft                 MPTCP RobE                      June 2019
               <https://datatracker.ietf.org/meeting/99/materials/slides-
               99-mptcp-a-proposal-for-mptcp-robust-session-
               establishment-mptcp-robe-01>.
+
+
+
+Amend                    Expires January 9, 2020                [Page 9]
+
+Internet-Draft                 MPTCP RobE                      July 2019
+
 
 Author's Address
 
@@ -445,4 +534,27 @@ Author's Address
 
 
 
-Amend                   Expires December 30, 2019               [Page 8]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend                    Expires January 9, 2020               [Page 10]
