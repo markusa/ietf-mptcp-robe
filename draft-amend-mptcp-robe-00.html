@@ -383,6 +383,8 @@
 <link href="#rfc.section.2.1" rel="Chapter" title="2.1 MP_JOIN_CAP option">
 <link href="#rfc.section.2.2" rel="Chapter" title="2.2 RobE_EXT negotiation">
 <link href="#rfc.section.2.3" rel="Chapter" title="2.3 States of operation">
+<link href="#rfc.section.2.3.1" rel="Chapter" title="2.3.1 RobE_SIM">
+<link href="#rfc.section.2.3.2" rel="Chapter" title="2.3.2 RobE_EXT">
 <link href="#rfc.section.2.4" rel="Chapter" title="2.4 Fallback mechanism">
 <link href="#rfc.section.2.5" rel="Chapter" title="2.5 TFO support">
 <link href="#rfc.section.3" rel="Chapter" title="3 Practical implications">
@@ -399,7 +401,7 @@
 
   <meta name="dct.creator" content="Amend, M." />
   <meta name="dct.identifier" content="urn:ietf:id:draft-amend-mptcp-robe-00" />
-  <meta name="dct.issued" scheme="ISO8601" content="2019-06-28" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-07-08" />
   <meta name="dct.abstract" content="Multipath TCP extends the plain, singlepath limited, TCP towards the capability of multipath transmission. This greatly improves the reliability and performance of TCP communication. For backwards compatiblity reason the Multipath TCP was designed to setup successfully an inital path first, after which subsequent paths can be added for multipath transmission. For that reason the Multipath TCP has the same limitations as the plain TCP during connection setup, in case the selected path is not functional.RobE provides the ability to simultaneously use multiple paths for connection setup. This document presents with RobE a set of extensions to Multipath TCP to overcome its singlepath limitation during connection initialisation and extends it to a full fledged multipath protocol. RobE ensures connecitivity if at least one functional path out of a bunch of paths is given and offers beside that the opportunity to significantly improve loading times of Internet services." />
   <meta name="description" content="Multipath TCP extends the plain, singlepath limited, TCP towards the capability of multipath transmission. This greatly improves the reliability and performance of TCP communication. For backwards compatiblity reason the Multipath TCP was designed to setup successfully an inital path first, after which subsequent paths can be added for multipath transmission. For that reason the Multipath TCP has the same limitations as the plain TCP during connection setup, in case the selected path is not functional.RobE provides the ability to simultaneously use multiple paths for connection setup. This document presents with RobE a set of extensions to Multipath TCP to overcome its singlepath limitation during connection initialisation and extends it to a full fledged multipath protocol. RobE ensures connecitivity if at least one functional path out of a bunch of paths is given and offers beside that the opportunity to significantly improve loading times of Internet services." />
 
@@ -420,10 +422,10 @@
 </tr>
 <tr>
 <td class="left">Intended status: Experimental</td>
-<td class="right">June 28, 2019</td>
+<td class="right">July 8, 2019</td>
 </tr>
 <tr>
-<td class="left">Expires: December 30, 2019</td>
+<td class="left">Expires: January 9, 2020</td>
 <td class="right"></td>
 </tr>
 
@@ -441,7 +443,7 @@
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on December 30, 2019.</p>
+<p>This Internet-Draft will expire on January 9, 2020.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -469,7 +471,11 @@
 </li>
 <li>2.3.   <a href="#rfc.section.2.3">States of operation</a>
 </li>
-<li>2.4.   <a href="#rfc.section.2.4">Fallback mechanism</a>
+<ul><li>2.3.1.   <a href="#rfc.section.2.3.1">RobE_SIM</a>
+</li>
+<li>2.3.2.   <a href="#rfc.section.2.3.2">RobE_EXT</a>
+</li>
+</ul><li>2.4.   <a href="#rfc.section.2.4">Fallback mechanism</a>
 </li>
 <li>2.5.   <a href="#rfc.section.2.5">TFO support</a>
 </li>
@@ -551,6 +557,7 @@
 <h1 id="rfc.section.1.2">
 <a href="#rfc.section.1.2">1.2.</a> <a href="#comparison_robe_mptcp" id="comparison_robe_mptcp">Comparison of RobE and traditional MPTCP</a>
 </h1>
+<p id="rfc.section.1.2.p.1">Section has DRAFT status</p>
 <div id="rfc.figure.1"></div>
 <div id="ref-mptcp-signaling"></div>
 <pre>
@@ -614,7 +621,7 @@ RobE EXT |             |                                |
              MPTCP v0 only and does not exist in MPTCP v1.
 </pre>
 <p class="figure">Figure 2: MPTCP RobE_SIM and RobE_EXT connection setup</p>
-<p></p>
+<p><a href="#ref-mptcp-signaling" class="xref">Figure 1</a> shows the traditional way of MPTCP handshaking with a MP_CAPABLE first, followed when successful by additional flows engaging MP_JOIN. MPTCP v0 <a href="#RFC6824" class="xref">[RFC6824]</a> and MPTCP v1 <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> differ in that a Key-A is sent with the first MP_CAPABLE or not.  <a href="#ref-mptcp-robe-sim-and-robe-ext-signaling" class="xref">Figure 2</a> changes the concept of the subsequent establishment in <a href="#ref-mptcp-signaling" class="xref">Figure 1</a> towards simultaneous requests (potential initial flows). For that, on several paths the MP_CAPABLE is used, like independent initial flow establishment. The final decision which path is selected as the main one and the handling of the remaining flow(s) differs in SA6.1 when RobE_SIM is applied or instead SA6.2 RobE_EXT.  </p>
 <h1 id="rfc.section.1.3">
 <a href="#rfc.section.1.3">1.3.</a> <a href="#robe_sim" id="robe_sim">Simple RobE (RobE_SIM)</a>
 </h1>
@@ -622,14 +629,37 @@ RobE EXT |             |                                |
 <h1 id="rfc.section.1.4">
 <a href="#rfc.section.1.4">1.4.</a> <a href="#robe_ext" id="robe_ext">Extended RobE (RobE_EXT)</a>
 </h1>
-<p id="rfc.section.1.4.p.1">Extends RobE_SIM by reusing the potential initial flows. This eliminates the overhead from RobE_SIM and accelerate the transmission speed by early availablity of multiple paths. Further it relaxes the dependency an a reliable third ACK of the 3-way handshake in MPTCP v1</p>
+<p id="rfc.section.1.4.p.1">Extends RobE_SIM by reusing the potential initial flows. This eliminates the overhead from RobE_SIM and accelerate the transmission speed by early availablity of multiple paths. Further it relaxes the dependency on a reliable third ACK of the 3-way handshake in MPTCP v1</p>
 <h1 id="rfc.section.2">
 <a href="#rfc.section.2">2.</a> <a href="#operation_overview" id="operation_overview">Operation Overview</a>
 </h1>
 <h1 id="rfc.section.2.1">
 <a href="#rfc.section.2.1">2.1.</a> <a href="#mp_join_cap" id="mp_join_cap">MP_JOIN_CAP option</a>
 </h1>
-<p id="rfc.section.2.1.p.1">[Tbd]</p>
+<div id="rfc.figure.3"></div>
+<div id="ref-mp-join-cap"></div>
+<pre>
+                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++---------------+---------------+-------+-------+---------------+
+|     Kind      |    Length     |Subtype|       |    ADDR_ID    |
++---------------+---------------+-------+-------+---------------+
+|                    Sender's Key-A (64 bits)                   |
+|                                                               |
+|                                                               |
++---------------------------------------------------------------+
+|                        HMAC (&gt;=96 bits)                       |
+|                                                               |
+|                                                               |
+:                                                               :
++---------------------------------------------------------------+
+ Key-B_fast_hash = crc16(Key-B) &amp; 0x3FF          -&gt; (10bit)
+ HMAC_keys =  HMAC(Key-A+Key-B+Key-B')           -&gt; (&gt;=96bit)
+ HMAC =  (HMAC_keys &amp; ~0x3FF) | Key-B_fast_hash  -&gt; (size HMAC_keys)
+
+</pre>
+<p class="figure">Figure 3: MP_JOIN_CAP</p>
+<p><a href="#ref-mp-join-cap" class="xref">Figure 3</a> is set according to the definition of MP_JOIN in <a href="#RFC6824" class="xref">[RFC6824]</a> <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>.  </p>
 <h1 id="rfc.section.2.2">
 <a href="#rfc.section.2.2">2.2.</a> <a href="#robe_ext_negotiation" id="robe_ext_negotiation">RobE_EXT negotiation</a>
 </h1>
@@ -637,7 +667,27 @@ RobE EXT |             |                                |
 <h1 id="rfc.section.2.3">
 <a href="#rfc.section.2.3">2.3.</a> <a href="#states" id="states">States of operation</a>
 </h1>
-<p id="rfc.section.2.3.p.1">[Tbd], according to <a href="#table_robe_features" class="xref">Table 1</a> describe for MPTCPv0/v1 the different states which can occure</p>
+<p id="rfc.section.2.3.p.1">[Tbd], according to <a href="#table_robe_features" class="xref">Table 1</a> describe for MPTCPv0/v1 the different states which can occure; Section has DRAFT status</p>
+<h1 id="rfc.section.2.3.1">
+<a href="#rfc.section.2.3.1">2.3.1.</a> RobE_SIM</h1>
+<p id="rfc.section.2.3.1.p.1">[Tbd]</p>
+<h1 id="rfc.section.2.3.2">
+<a href="#rfc.section.2.3.2">2.3.2.</a> RobE_EXT</h1>
+<p></p>
+
+<ol>
+<li>In the flow diagram <a href="#ref-mptcp-robe-sim-and-robe-ext-signaling" class="xref">Figure 2</a>, A1&#8596;B1 is assumed to be the initial flow. A2&#8596;B1 shall be recycled and the ACK is sent with MP_JOIN_CAP. Furthermore, the MP_CAPABLE arrives first at Host B (SB5) and the MP_JOIN_CAP afterwards (SB6.2). When the MP_JOIN_CAP is received, Host B has to iterate over the connection list once (like MP_JOIN) and check for Key-A availability. If a Key-A connection is found, this one is validated against the HMAC value. The validation has two reasons: first, several Key-A can exist, because different hosts may choose the same Key-A by accident. Furthermore, no one can join a connection by just recording/brute-forcing Key-A and duplicating the request.</li>
+<li>Like above, but MP_JOIN_CAP arrives before last MP_CAPABLE at Host B <ul>
+<li>
+<a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>; Based on Key-A, Host B will iterate over the connection list, but it will not find a match, because Key-A of the previous selected initial flow (SA3, SA5) has not arrived yet. So it will continue with a fast iteration only over the connections which are still in establishment phase using the 10 bit Key-B fast hash (crc16(Key-B) &amp; 0x3FF). If it matches against a (precomputed) existing Key-B_fast_hash in the connection list, it will validate the request using the HMAC(Key-A+B+B') to ensure legitimation. If successful, both, the initial flow and the MP_JOIN_CAP flow, can be immediately established. This is true, because without the knowledge of Key-B, Host A could not calculate the HMAC. So it is clear, that Host A had received the SYN/ACK (SB3). This also mitigates the exchange of a reliable ACK during the handshake process. MPTCP sends the Key-A only with the last ACK and therefore prevents subsequent flow establishment until successful reception at Host B. Using RobE_EXT, the reception of a MP_JOIN_CAP (<a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>) is sufficient to establish both, the path carrying Key-B and Key-B'.</li>
+<li>
+<a href="#RFC6824" class="xref">[RFC6824]</a>; Can match based on Key-A, same effort as for a MP JOIN.</li>
+</ul>
+</li>
+<li>A2&#8596;B1 is selected as initial flow, because the respective SYN/ACK returns earlier at Host A. It is the same as above, just the other way round.</li>
+</ol>
+
+<p> </p>
 <h1 id="rfc.section.2.4">
 <a href="#rfc.section.2.4">2.4.</a> <a href="#fallback" id="fallback">Fallback mechanism</a>
 </h1>
