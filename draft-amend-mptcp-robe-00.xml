@@ -25,7 +25,7 @@
         <email>Markus.Amend@telekom.de</email>
       </address>
     </author>
-    <date day="28" month="June" year="2019"/>
+    <date day="8" month="July" year="2019"/>
     <workgroup>Multipath TCP Working Group</workgroup>
     <abstract>
       <t>
@@ -85,9 +85,10 @@ Subflow:  A flow of TCP segments operating over an individual path,
 </t>
       </section>
       <section title="Comparison of RobE and traditional MPTCP" anchor="comparison_robe_mptcp">
-        <t>
-          <figure title="MPTCP connection setup" anchor="ref-mptcp-signaling">
-            <artwork><![CDATA[
+        <t>Section has DRAFT status</t>
+        <t><xref target="ref-mptcp-signaling"/> shows the traditional way of MPTCP handshaking with a MP_CAPABLE first, followed when successful by additional flows engaging MP_JOIN. MPTCP v0 <xref target="RFC6824"/> and MPTCP v1 <xref target="I-D.ietf-mptcp-rfc6824bis"/> differ in that a Key-A is sent with the first MP_CAPABLE or not.
+
+          <figure title="MPTCP connection setup" anchor="ref-mptcp-signaling"><artwork><![CDATA[
             Host A                                  Host B
      ------------------------                       ----------
      Address A1    Address A2                       Address B1
@@ -113,10 +114,11 @@ Subflow:  A flow of TCP segments operating over an individual path,
 
          [*] Key-A in the first MP-capable is related to
              MPTCP v0 only and does not exist in MPTCP v1.
-]]></artwork>
-          </figure>
-          <figure title="MPTCP RobE_SIM and RobE_EXT connection setup" anchor="ref-mptcp-robe-sim-and-robe-ext-signaling">
-            <artwork><![CDATA[
+]]></artwork></figure>
+
+<xref target="ref-mptcp-robe-sim-and-robe-ext-signaling"/> changes the concept of the subsequent establishment in <xref target="ref-mptcp-signaling"/> towards simultaneous requests (potential initial flows). For that, on several paths the MP_CAPABLE is used, like independent initial flow establishment. The final decision which path is selected as the main one and the handling of the remaining flow(s) differs in SA6.1 when RobE_SIM is applied or instead SA6.2 RobE_EXT.
+
+          <figure title="MPTCP RobE_SIM and RobE_EXT connection setup" anchor="ref-mptcp-robe-sim-and-robe-ext-signaling"><artwork><![CDATA[
              Host A                                  Host B
      ------------------------                       ----------
      Address A1    Address A2                       Address B1
@@ -145,26 +147,63 @@ RobE EXT |             |                                |
 
          [*] Key-A in the first MP-capable is related to
              MPTCP v0 only and does not exist in MPTCP v1.
-]]></artwork>
-          </figure>
+]]></artwork></figure>
         </t>
       </section>
       <section title="Simple RobE (RobE_SIM)" anchor="robe_sim">
         <t>Sender only implementation, no negotiation required, robust according to <xref target="table_robe_features"/>, connection setup benefits from fastest path</t>
       </section>
       <section title="Extended RobE (RobE_EXT)" anchor="robe_ext">
-        <t>Extends RobE_SIM by reusing the potential initial flows. This eliminates the overhead from RobE_SIM and accelerate the transmission speed by early availablity of multiple paths. Further it relaxes the dependency an a reliable third ACK of the 3-way handshake in MPTCP v1</t>
+        <t>Extends RobE_SIM by reusing the potential initial flows. This eliminates the overhead from RobE_SIM and accelerate the transmission speed by early availablity of multiple paths. Further it relaxes the dependency on a reliable third ACK of the 3-way handshake in MPTCP v1</t>
       </section>
     </section>
     <section title="Operation Overview" anchor="operation_overview">
       <section title="MP_JOIN_CAP option" anchor="mp_join_cap">
-        <t>[Tbd]</t>
+        <t><figure title="MP_JOIN_CAP" anchor="ref-mp-join-cap"><artwork><![CDATA[
+                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++---------------+---------------+-------+-------+---------------+
+|     Kind      |    Length     |Subtype|       |    ADDR_ID    |
++---------------+---------------+-------+-------+---------------+
+|                    Sender's Key-A (64 bits)                   |
+|                                                               |
+|                                                               |
++---------------------------------------------------------------+
+|                        HMAC (>=96 bits)                       |
+|                                                               |
+|                                                               |
+:                                                               :
++---------------------------------------------------------------+
+ Key-B_fast_hash = crc16(Key-B) & 0x3FF          -> (10bit)
+ HMAC_keys =  HMAC(Key-A+Key-B+Key-B')           -> (>=96bit)
+ HMAC =  (HMAC_keys & ~0x3FF) | Key-B_fast_hash  -> (size HMAC_keys)
+
+]]></artwork></figure>
+
+The ADDR_ID field of the MP_JOIN_CAP in <xref target="ref-mp-join-cap"/> is set according to the definition of MP_JOIN in <xref target="RFC6824"/> <xref target="I-D.ietf-mptcp-rfc6824bis"/>.
+
+</t>
       </section>
       <section title="RobE_EXT negotiation" anchor="robe_ext_negotiation">
         <t>[Tbd]</t>
       </section>
       <section title="States of operation" anchor="states">
-        <t>[Tbd], according to <xref target="table_robe_features"/> describe for MPTCPv0/v1 the different states which can occure</t>
+        <t>[Tbd], according to <xref target="table_robe_features"/> describe for MPTCPv0/v1 the different states which can occure; Section has DRAFT status</t>
+        <section title="RobE_SIM">
+          <t>[Tbd]</t>
+        </section>
+        <section title="RobE_EXT">
+          <t>
+            <list style="numbers">
+              <t>In the flow diagram <xref target="ref-mptcp-robe-sim-and-robe-ext-signaling"/>, A1↔B1 is assumed to be the initial flow. A2↔B1 shall be recycled and the ACK is sent with MP_JOIN_CAP. Furthermore, the MP_CAPABLE arrives first at Host B (SB5) and the MP_JOIN_CAP afterwards (SB6.2). When the MP_JOIN_CAP is received, Host B has to iterate over the connection list once (like MP_JOIN) and check for Key-A availability. If a Key-A connection is found, this one is validated against the HMAC value. The validation has two reasons: first, several Key-A can exist, because different hosts may choose the same Key-A by accident. Furthermore, no one can join a connection by just recording/brute-forcing Key-A and duplicating the request.</t>
+              <t>Like above, but MP_JOIN_CAP arrives before last MP_CAPABLE at Host B
+<list style="symbols"><t><xref target="I-D.ietf-mptcp-rfc6824bis"/>;
+Based on Key-A, Host B will iterate over the connection list, but it will not find a match, because Key-A of the previous selected initial flow (SA3, SA5) has not arrived yet. So it will continue with a fast iteration only over the connections which are still in establishment phase using the 10 bit Key-B fast hash (crc16(Key-B) &amp; 0x3FF). If it matches against a (precomputed) existing Key-B_fast_hash in the connection list, it will validate the request using the HMAC(Key-A+B+B') to ensure legitimation. If successful, both, the initial flow and the MP_JOIN_CAP flow, can be immediately established. This is true, because without the knowledge of Key-B, Host A could not calculate the HMAC. So it is clear, that Host A had received the SYN/ACK (SB3). This also mitigates the exchange of a reliable ACK during the handshake process. MPTCP sends the Key-A only with the last ACK and therefore prevents subsequent flow establishment until successful reception at Host B. Using RobE_EXT, the reception of a MP_JOIN_CAP (<xref target="I-D.ietf-mptcp-rfc6824bis"/>) is sufficient to establish both, the path carrying Key-B and Key-B'.</t><t><xref target="RFC6824"/>;
+Can match based on Key-A, same effort as for a MP JOIN.</t></list></t>
+              <t>A2↔B1 is selected as initial flow, because the respective SYN/ACK returns earlier at Host A. It is the same as above, just the other way round.</t>
+            </list>
+          </t>
+        </section>
       </section>
       <section title="Fallback mechanism" anchor="fallback">
         <t>[Tbd], e.g. one path does not support RobE or MP-TCPv0/v1</t>
