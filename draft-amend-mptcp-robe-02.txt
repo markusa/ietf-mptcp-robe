@@ -1,0 +1,1232 @@
+
+
+
+
+Multipath TCP Working Group                                     M. Amend
+Internet-Draft                                          Deutsche Telekom
+Intended status: Experimental                                    J. Kang
+Expires: April 21, 2020                                           Huawei
+                                                        October 19, 2019
+
+
+        Multipath TCP Extension for Robust Session Establishment
+                       draft-amend-mptcp-robe-00
+
+Abstract
+
+   Multipath TCP extends the plain, single-path limited, TCP towards the
+   capability of multipath transmission.  This greatly improves the
+   reliability and performance of TCP communication.  For backwards
+   compatibility reasons the Multipath TCP was designed to setup
+   successfully an initial path first, after which subsequent paths can
+   be added for multipath transmission.  For that reason the Multipath
+   TCP has the same limitations as the plain TCP during connection
+   setup, in case the selected path is not functional.
+
+   This document proposes a set of implementations and their
+   combinations that provide a more Robust Establishment (RobE) of MPTCP
+   sessions.  It includes RobE_TIMER, RobE_SIM, RobE_EXT and RobE_IPS.
+
+   RobE_TIMER is designed to stay close to MPTCP in that standard
+   functionality is used wherever possible.  Resiliency against network
+   outages is achieved by modifying the SYN retransmission timer: If one
+   path is defective, another path is used.
+
+   RobE_SIM and RobE_EXT provides the ability to simultaneously use
+   multiple paths for connection setup.  They ensure connectivity if at
+   least one functional path out of a bunch of paths is given and offers
+   beside that the opportunity to significantly improve loading times of
+   Internet services.
+
+   RobE_IPS provides a heuristic to select properly an initial path for
+   connection establishment with a remote host based on empirical data
+   derived from previous connection information.
+
+   In practice, these independent solutions can be complementary used.
+   This document also presents the design and protocol procedure for the
+   combination scenario in addition to stand-alone solutions.
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                 [Page 1]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on April 21, 2020.
+
+Copyright Notice
+
+   Copyright (c) 2019 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (https://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
+     1.1.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   5
+   2.  Implementation without protocol adaptation  . . . . . . . . .   6
+     2.1.  Re-transmission Timer(RobE_TIMER) . . . . . . . . . . . .   6
+     2.2.  Simultaneous Initial Paths Simple Version (RobE_SIM)  . .   7
+     2.3.  Heuristic Initial Path Selection  . . . . . . . . . . . .   8
+       2.3.1.  Architecture  . . . . . . . . . . . . . . . . . . . .   8
+       2.3.2.  Typical Flows . . . . . . . . . . . . . . . . . . . .   9
+       2.3.3.  Path decision information . . . . . . . . . . . . . .  12
+       2.3.4.  Initial Path Selection on RTT . . . . . . . . . . . .  13
+     2.4.  Combination of RobE_SIM and RobE_IPS  . . . . . . . . . .  13
+     2.5.  Combination of RobE_TIMER and RobE_IPS  . . . . . . . . .  14
+   3.  Implementation with Bi-directional Support  . . . . . . . . .  15
+     3.1.  Simultaneous Initial Paths Extended Version (RobE_EXT)  .  15
+
+
+
+Amend & Kang             Expires April 21, 2020                 [Page 2]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+       3.1.1.  RobE_EXT Negotiation and Procedure  . . . . . . . . .  15
+       3.1.2.  Protocol Adaptation . . . . . . . . . . . . . . . . .  16
+       3.1.3.  Fallback Mechanism  . . . . . . . . . . . . . . . . .  17
+       3.1.4.  Security Consideration  . . . . . . . . . . . . . . .  19
+     3.2.  Heuristic Initial Path Selction with Server-RTT
+           Measurement . . . . . . . . . . . . . . . . . . . . . . .  19
+       3.2.1.  Description . . . . . . . . . . . . . . . . . . . . .  19
+       3.2.2.  Protocol Adaptation . . . . . . . . . . . . . . . . .  20
+       3.2.3.  Fallback Mechanism  . . . . . . . . . . . . . . . . .  20
+       3.2.4.  Security Consideration  . . . . . . . . . . . . . . .  21
+   4.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  21
+   5.  Informative References  . . . . . . . . . . . . . . . . . . .  22
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  22
+
+1.  Introduction
+
+   Multipath TCP Robust Session Establishment (MPTCP RobE) is a set of
+   extensions to regular MPTCP [RFC6824] and its next upcoming version
+   [I-D.ietf-mptcp-rfc6824bis], which releases single path limitations
+   during the initial connection setup.  Several scenarios require and
+   benefit from a reliable and in time connection setup which is not
+   covered by [RFC6824] and [I-D.ietf-mptcp-rfc6824bis] so far.  MPTCP
+   was designed to be compliant with the TCP standard [RFC0793] and
+   introduced therefore the concept of an initial TCP flow and adding
+   subsequent flows after successful multipath negotiation on the
+   initial path.  While fulfilling its purpose, MPTCP is however fully
+   dependent on the transmission characteristics of the communication
+   link selected for initiating MPTCP.
+
+   Multipath TCP enables hosts to exchange packets belonging to a single
+   connection over several paths.  Implemented in user equipment, these
+   paths usually corresponds to different networks (such as cellular and
+   WiFi) relying on the network interfaces configured on the terminal.
+   The path or network interface for initiating the initial subflow
+   setup is most often provided by the operation system of the terminal.
+   For example, if LTE and WiFi are present in a mobile phone, WiFi is
+   usually the interface offered to initiate the MPTCP session.
+
+   This design falls short in situations where the default path does not
+   provide the best performance compared to other available paths.  In a
+   worst case the default path is not even capable of setting up the
+   initial flow letting any other functional path unused.  For example,
+   if the WLAN signal is weak or broken, the establishment of the
+   subflow will be delayed or impossible due to packet loss.  This in
+   turn, leads to longer startup delay or no communication at all for
+   services using MPTCP.
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                 [Page 3]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+   Above shows that sequential path establishment and default initial
+   path will result in experience reduction when using MPTCP.  So this
+   document proposes solutions to overcome the aforementioned
+   limitations and provide a more robust connection setup compared to
+   traditional MPTCP.
+
+   RobE_SIM and RobE_EXT aims to overcomes the limitations of [RFC6824]
+   and [I-D.ietf-mptcp-rfc6824bis]using one initial flow and introduces
+   the concept of potential initial flows triggered simultaneously.
+   Potential initial flows gives the freedom to use more than one path
+   to request multipath connectivity and select the initial flow at a
+   later point.  RobE_SIM is a break-before-make mechanism, guaranteeing
+   at least the robust connection establishment, however the RobE_EXT
+   reuses every potential initial flow request to combine it with less
+   overhead and accelerated multipath availability, leveraging a new
+   MPTCP option MP_JOIN_CAP.  From a standardization perspective, the
+   RobE_SIM is fully compliant with [RFC6824] and
+   [I-D.ietf-mptcp-rfc6824bis] and is herein more of a descriptive and
+   procedural nature.  The RobE_EXT requires a new MPTCP option but with
+   the potential to significantly improve the MPTCP experience.
+
+   For the limitation of default initial path, RobE_IPS makes no changes
+   to standard MPTCP procedure and improves the performance of
+   connection establishment by introducing initial path selection
+   strategy and algorithm.  The input for strategy and algorithm is the
+   transmission status information which represents the transmission
+   performance of each available path or network interface.  The
+   transmission status information is characterized by at least one of
+   the parameters: signal strength, throughput, round-trip time (RTT)
+   and link success rate.  In this way, a path with better transmission
+   performance can be determined and the network interface to it can be
+   used for connection establishment.
+
+   Table 1 summarizes the impact of RobE_TIMER, RobE_SIM, RobE_EXT and
+   RobE_IPS compared to [RFC6824] and [I-D.ietf-mptcp-rfc6824bis].
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                 [Page 4]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+   +----------+---------+---------+---------+---------------+----------+
+   | Scenario | MPTCP   | RobE_TI | RobE_SI | RobE_EXT      | RobE_IPS |
+   |          |         | MER     | M       |               |          |
+   +----------+---------+---------+---------+---------------+----------+
+   | IP       | Delayed | In the  | No      | No impact     | Delayed  |
+   | packet   | connect | scope   | impact  |               | connecti |
+   | loss     | ion     | of      |         |               | on       |
+   |          |         | timer   |         |               |          |
+   +----------+---------+---------+---------+---------------+----------+
+   | IP       | No conn | In the  | No      | No impact     | No conne |
+   | broken   | ection  | scope   | impact  |               | ction    |
+   |          |         | of      |         |               |          |
+   |          |         | timer   |         |               |          |
+   +----------+---------+---------+---------+---------------+----------+
+   | IP setup | Default | Default | Fastest | Fastest path  | Optimal  |
+   | duration | route   | route   | path    |               | path     |
+   | dependen |         |         |         |               |          |
+   | cy       |         |         |         |               |          |
+   +----------+---------+---------+---------+---------------+----------+
+   | MP avail | MP_CAPA | MP_CAPA | MP_CAPA | max(MP_CAPABL | MP_CAPAB |
+   | ability  | BLE +   | BLE +   | BLE +   | E_1,          | LE +     |
+   | duration | MP_JOIN | MP_JOIN | MP_JOIN | MP_CAPABLE_2) | MP_JOIN  |
+   +----------+---------+---------+---------+---------------+----------+
+   | Guarante | Depend  | Yes     | Yes     | Yes           | Depend   |
+   | eing     | on the  |         |         |               | on the   |
+   | session  | default |         |         |               | right se |
+   | setup    | route   |         |         |               | lection  |
+   +----------+---------+---------+---------+---------------+----------+
+
+                     IP: Initial Path; MP: Multi-Path
+
+      Table 1: Overview RobE features during initial connection setup
+
+1.1.  Terminology
+
+   This document makes use of a number of terms that are either MPTCP-
+   specific or have defined meaning in the context of MPTCP, as follows:
+
+      Path: A sequence of links between a sender and a receiver, defined
+      in this context by a 4-tuple of source and destination address/
+      port pairs.
+
+      Subflow: A flow of TCP segments operating over an individual path,
+      which forms part of a larger MPTCP connection.  A subflow is
+      started and terminated similar to a regular TCP connection.
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                 [Page 5]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+2.  Implementation without protocol adaptation
+
+   RobE_TIMER, RobE_SIM and RobE_IPS are compatible with current MPTCP
+   protocol, [RFC6824] and [I-D.ietf-mptcp-rfc6824bis].  Following
+   sections will describe them in detail.
+
+2.1.  Re-transmission Timer(RobE_TIMER)
+
+   In RobE_TIMER, a new connection is initiated by sending a
+   SYN+MP_CAPABLE along the initial path.  If this path is functional,
+   the solution will perform identical to classic MPTCP: the initial
+   flow will be established, and subsequent flows can be created
+   afterwards.  If however the initial path is faulty, the
+   retransmission will be triggered on another path.  This path might
+   circumvent the dysfunctional network, and allow the client to create
+   an initial subflow.  The first path is now seen as a subsequent path
+   and the client sends SYN+MP_JOIN messages to create a subsequent
+   flow.
+
+   In high latency networks, the initial SYN+MP_CAPABLE might be delayed
+   until the client retries on another path.  Once the second SYN
+   arrives at the server, it will try to complete the three-way
+   handshake.  If the first SYN was delayed by more than the
+   retransmission time plus half a Round Trip Time (RTT) of the second
+   path, it will arrive at the server after the second SYN.  The server
+   could now treat the segment as obsolete and drop it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                 [Page 6]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                Host A                                    Host B
+         ------------------------                       ----------
+         Address A1    Address A2                       Address B1
+         ----------    ----------                       ----------
+             |             |                                |
+             |            SYN + MP_CAPABLE(Key-A[*])        |
+             |Timer---------------------------------------->|
+             |             |   SYN + MP_CAPABLE(Key-A'[*])  |
+             |             |------------------------------->|
+             |             |   SYN/ACK+MP_CAPABLE(Key-B')   |
+             |             |<-------------------------------|
+             |             | ACK + MP_CAPABLE(Key-A',Key-B')|
+             |             |------------------------------->|
+             |             |   SYN + MP_JOIN(Token-B',R-A)  |
+             |--------------------------------------------->|
+             |   Subflow will be set up as normal MPTCP     |
+             |                                              |
+
+              [*] Key-A in the first MP-capable is related to
+                MPTCP v0 only and does not exist in MPTCP v1.
+
+                     Figure 1: The Robe_TIMER Solution
+
+   Immediately after sending the ACK, subflows are established on the
+   remaining paths as defined in [RFC6824] and
+   [I-D.ietf-mptcp-rfc6824bis]
+
+   [Notes: How to set the Timer is TBD.  If there is the case that the
+   first SYN on default path arrives earlier than that from the second
+   path, the MPTCP connection will be initialized on the path of the
+   first SYN.The server could treat the second SYN as obsolete and drop
+   it.]
+
+2.2.  Simultaneous Initial Paths Simple Version (RobE_SIM)
+
+   RobE_SIM is sender only implementation and no negotiation is
+   required.  In RobE_SIM, connection setup benefits from fastest path.
+   As in Figure 2, host A initiates connection on more than one path.
+   The paths used for potential initial flows can be all paths that are
+   deployed on device or the paths selected on experience.  When host A
+   receives the first SYN/ACK back from host B, the path carrying this
+   message is identified as the normal initial path.  Host A sends RST
+   to terminate connections setup on other paths when it receives more
+   SYN/ACKs from them.  The terminated ones are merged as subsequent
+   subflows following [RFC6824] and [I-D.ietf-mptcp-rfc6824bis].
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                 [Page 7]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                  Host A                                  Host B
+         ------------------------                       ----------
+         Address A1    Address A2                       Address B1
+         ----------    ----------                       ----------
+             |             |                                |
+             |        SYN + MP_CAPABLE(Key-A[*])            |
+             |--------------------------------------------->|
+             |             |  SYN + MP_CAPABLE(Key-A'[*])   |
+             |             |------------------------------->|
+             |        SYN/ACK + MP_CAPABLE(Key-B)           |
+             |<-------------------------------------------->|
+             |             |  SYN/ACK + MP_CAPABLE(Key-B')  |
+             |             |<-------------------------------|
+             |        ACK + MP_CAPABLE(Key-A, Key-B)        |
+             |--------------------------------------------->|
+             |             |             RST                |
+             |             |------------------------------->|
+             |             |  SYN + MP_JOIN(Token-B,R-A)    |
+             |             |------------------------------->|
+             |             |  MP_JOIN Process...            |
+             |             |                                |
+
+             [*] Key-A in the first MP-capable is related to
+               MPTCP v0 only and does not exist in MPTCP v1.
+
+                 Figure 2: MPTCP RobE_SIM Connection Setup
+
+2.3.  Heuristic Initial Path Selection
+
+2.3.1.  Architecture
+
+   Figure 3 provides the architecture for "Initial-path Selection".  It
+   can be integrated in MPTCP stack or as an isolated module in the
+   terminal.  It obtains transmission status information for each
+   available path when it receives a request from an application.  Then
+   it makes decision on initial path to MPTCP stack to establish
+   connection with remote host.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                 [Page 8]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+         +-------------------+              +-------------------+
+         |     Terminal      |              |      Server       |
+         |  +-------------+  |              |  +-------------+  |
+         |  |Application n|  |              |  |Application n|  |
+         |  +-------------+  |              |  +-------------+  |
+         |        |          |              |         |         |
+         |  +-------------+  |              |         |         |
+         |  |Initial-path |  |-------+      |         |         |
+         |  |  Selection  |  |       |      |         |         |
+         |  +-------------+  |       |      |         |         |
+         |        |          |  +--------+  |         |         |
+         |  +-------------+  |--|Internet|--|  +-------------+  |
+         |  | MPTCP Stack |  |--+--------+--|  | MPTCP Stack |  |
+         |  +-------------+  |              |  +-------------+  |
+         +-------------------+              +-------------------+
+
+             Figure 3: Architecture for Initial-path Selection
+
+2.3.2.  Typical Flows
+
+   Two typical flows are listed here.  Figure 4 shows that "Initial-path
+   Selection" will be executed for each MPTCP connection establishment.
+   Figure 5 describes that "Initial-path Selection" can be used from the
+   time that an application requests to set up a second MPTCP connection
+   after the first one is completed.  Considering that no heuristics is
+   used for decision for the first MPTCP connection, default initial
+   path can be adopted.  This is just one of possible specific scenarios
+   for this method.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                 [Page 9]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                           +---------------+
+                           |  Application  |
+                           |    Request    |
+                           +---------------+
+                                   |
+                                   V
+                           +---------------+
+                      +--->| Initial-path  |<---+
+                      |    |   Selection   |    |
+                      |    +---------------+    |
+                      |            |            |
+                      |            V            |Info
+                      |    +---------------+    |
+                      |    |  Set initial  |----+
+                      |    |     path      |
+                      |    |   for MPTCP   |
+                      |    +---------------+
+                      |            |
+                      |            V
+                      |    +---------------+
+                      |No  |Establish MPTCP|
+                      +----|  Connection   |
+                           +---------------+
+                                   |Yes
+                                   V
+
+    Figure 4: Initial-path Selection for each connection establishment
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 10]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                        +--------------+
+                        |  Application |
+                        |    Request   |
+                        +--------------+
+                                |
+                                V
+                        +--------------+Yes
+                        |     First    |------------+
+                        |  Connection? |            |
+                        +--------------+            |
+                                |No                 |
+                                V                   |
+                        +--------------+            V
+                 +----->| Initial-path |<-+     +-------+
+                 |      |   Selection  |  |     |Default|
+                 |      +--------------+  |     |initial|
+                 |              |         |     |  path |
+                 |              |         |     +-------+
+                 |              V         |Info     |
+                 |      +--------------+  |         |
+                 |      |  Set initial |--+         |
+                 |      |     path     |            |
+                 |      |   for MPTCP  |            |
+                 |      +--------------+            |
+                 |              |                   |
+                 |              V                   |
+                 |No    +--------------+            |
+                 +------|Successfully? |<-----------+
+                        +--------------+
+                                |Yes
+                                V
+
+
+   Figure 5: RobE_IPS with default initial path for the first connection
+     and Initial-path Selection for subsquent connection establishment
+
+   Figure 6 shows the abstract implementation process for "Initial-path
+   Selection".  Upon a request from an application, "Initial-path
+   Selection" module will acquire transmission status information which
+   represents the transmission performance of each available path or
+   network interface and evaluate it.  The transmission status
+   information is characterized by at least one of the parameters:
+   signal strength, throughput, round-trip time (RTT) and link success
+   rate.  In this way, we can determine a path with better transmission
+   performance and use the network interface to it for connection
+   establishment.
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 11]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                                    |
+                                    V
+                       +---------------------------+
+                       |Acquire transmission status|
+                       | info for available paths  |
+                       +---------------------------+
+                                    |
+                                    V
+                       +---------------------------+
+                       |   Evaluating the status   |
+                       |    for available paths    |
+                       +---------------------------+
+                                    |No
+                                    V
+                       +---------------------------+
+                       | Determining an available  |
+                       |     path with better      |
+                       |      transmission         |
+                       |      performance          |
+                       +---------------------------+
+                                    |
+                                    V
+                       +---------------------------+
+                       |     Using the network     |
+                       |         interface         |
+                       |corrresponding to the path |
+                       | with better transmission  |
+                       |performance for connection |
+                       |       establishment       |
+                       +---------------------------+
+                                    |
+                                    V
+
+        Figure 6: Implementation process for Initial-path Selection
+
+2.3.3.  Path decision information
+
+   Such heuristics can be mainly divided into three levels: application
+   level, transport-layer level and network-interface level based on the
+   information acquisition method.  For example, RTT is calculated for
+   each subflow in one MPTCP connection, so it is one of transport-layer
+   level.  The transmission status information for each available path
+   SHOULD be characterized by at least one of the parameters: signal
+   strength, throughput, RTT and link success rate.  Information in
+   application level is used for statistics.
+
+   o Application level: application name, domain name, port number and
+   location.
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 12]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+   o Transport-layer level: RTT for each subflow within one MPTCP
+   connection in running application.
+
+2.3.4.  Initial Path Selection on RTT
+
+   Figure 7 shows a flowchart for "Initial-path Selection" based on RTT.
+   Normally, path RTT can be determined by a time difference between
+   sending a package and an ACK.  For some asymmetric downloading
+   services, the latest RTT for these subflows is suggested to be
+   calculated by data sender, i.e. application server and transformed to
+   data receiver, shown in Section 3.2.  Besides "latest RTT", algorithm
+   for estimating the mean RTT by more than one RTT sent from data
+   sender is also proposed.
+
+                +-------------------+
+                |    New Session    |
+                +-------------------+
+                          |
+                          V
+                +-------------------+ No
+                |Running Connections|-----------+
+                |(LTE.RTT<WiFi.RTT) |           |
+                +-------------------+           |
+                          |Yes                  |
+                          V                     V
+                +-------------------+   +----------------+
+                |     Set LTE as    |   |   Set WiFi as  |
+                |    initial path   |   |  initial path  |
+                +-------------------+   +----------------+
+
+               Figure 7: Initial-path Selection based on RTT
+
+2.4.  Combination of RobE_SIM and RobE_IPS
+
+   In an implementation, a single solution may not be enough to solve
+   all the problems.  They are combined to improve robustness.  Figure 8
+   shows the combination of RobE_SIM and RobE_IPS.  RobE_SIM can be used
+   at the very beginning when the sender is ignorant about path info.
+   And optimal initial path selection can be used for consecutive
+   connections.
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 13]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                         +--------------+
+                         |  Application |
+                         |    Request   |
+                         +--------------+
+                                 |
+                                 V
+                         +--------------+
+                  +----->| Any data for | No
+                  |      | Initial Path |----------+
+                  |      |  Selection?  |          |
+                  |      +--------------+          |
+                  |              |                 |
+                  |              V                 V
+                  |      +--------------+     +--------+
+                  |      | Initial-path |     |RobE_SIM|
+                  |      |  Selection   |<-+  +--------+
+                  |      +--------------+  |       |
+                  |              |         |       |
+                  |              V         |Info   |
+                  |      +---------------+ |       |
+                  |No    |Establish MPTCP|-+       |
+                  +------|  Connection   |<--------+
+                         +---------------+
+                                 |
+                                 V
+                   No    +---------------+
+                  <------| Successfully? |
+                  Network+---------------+
+                  Problem        |Yes
+                                 V
+
+              Figure 8: Combination of RobE_SIM and RobE_IPS
+
+2.5.  Combination of RobE_TIMER and RobE_IPS
+
+   RobE_IPS do not guarentee that session can be set up on the selection
+   of initial path.  It depends on the algorithm and policy.  So
+   RobE_Timer can be introduced to optimizeze the control of path
+   switching when the initial path can not work as normal.  When the
+   system enables RobE_IPS and uses the selected initial path for
+   session establishment,it sets the timer for path switching.  When
+   timer is up, the system will change to another path for re-establish
+   connection considering the requirement for delay time from
+   application.
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 14]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                                +---------------+
+                                |  Application  |
+                                |    Request    |
+                                +---------------+
+                                        |
+                                        V
+                                +---------------+
+                                |  Initial Path |
+                         |----->|   Selection   |
+                         |      | and Set Timer |
+                         |      +---------------+
+                         |              |
+                         |              V
+                         |Yes   +---------------+
+                         +------| Timer is up?  |
+                                +---------------+
+                                        |No
+                                        V
+                                +---------------+
+                                |Establish MPTCP|
+                                |  Connection   |
+                                +---------------+
+                                        |
+                                        V
+                          No    +---------------+
+                         <------| Successfully? |
+                         Network+---------------+
+                         Problem        |Yes
+                                        V
+
+             Figure 9: Combination of RobE_Timer and RobE_IPS
+
+3.  Implementation with Bi-directional Support
+
+3.1.  Simultaneous Initial Paths Extended Version (RobE_EXT)
+
+   RobE_EXT extends RobE_SIM by reusing the potential initial flows.
+   This eliminates the overhead from RobE_SIM with introducing new
+   option MP_JOIN_CAP and accelerate the transmission speed by early
+   availablity of multiple paths.  Further it relaxes the dependency on
+   a reliable third ACK of the 3-way handshake in MPTCP v1.
+
+3.1.1.  RobE_EXT Negotiation and Procedure
+
+   This section is used in the scenario that both sides support MPTCP
+   and RobE_EXT.  Host A initiates connection on path A1->B1 and A2->B2
+   by SYN with a subtype set to RobE_EXT_EN in addition to
+   MPTCP_CAPABLE.  The receiver returns SYN/ACK also with a RobE_EXT_EN
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 15]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+   option if it supports RobE_EXT.  The path with first SYN/ACK will be
+   selected as initial subflow.  Host A sends the new MP_JOIN_CAP option
+   on all the other subflows to immediately merge them with initial
+   subflow.
+
+               Host A                                        Host B
+      ------------------------                             ----------
+      Address A1    Address A2                             Address B1
+      ----------    ----------                             ----------
+          |             |                                       |
+          |      SYN+MP_CAPABLE+ROBE_EXT_EN(Key-A[*])           |
+          |---------------------------------------------------->|
+          |             | SYN+MP_CAPABLE+ROBE_EXT_EN(Key-A'[*]) |
+          |             |-------------------------------------->|
+          |      SYN/ACK+MP_CAPABLE+ROBE_EXT_EN(Key-B)          |
+          |<--------------------------------------------------->|
+          |             | SYN/ACK+MP_CAPABLE+ROBE_EXT_EN(Key-B')|
+          |             |<--------------------------------------|
+          |       ACK+MP_CAPABLE+ROBE_EXT_EN(Key-A,Key-B)       |
+          |---------------------------------------------------->|
+          |             |                                       |
+          |             |  ACK+MP_JOIN_CAP(Key-A,HMAC)          |
+          |             |-------------------------------------->|
+          |             |                                       |
+
+            [*] Key-A in the first MP-capable is related to
+               MPTCP v0 only and does not exist in MPTCP v1.
+
+                Figure 10: MPTCP RobE_EXT Connection Setup
+
+3.1.2.  Protocol Adaptation
+
+3.1.2.1.  ROBE_EXT_EN Option
+
+                        1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +---------------+---------------+-------+-------+---------------+
+     |     Kind      |    Length     |Subtype|    (reserved)         |
+     +---------------+---------------+-------+-------+---------------+
+
+                       Figure 11: ROBE_EXT_EN_OPTION
+
+3.1.2.2.  MP_JOIN_CAP Option
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 16]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                      1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +---------------+---------------+-------+-------+---------------+
+   |     Kind      |    Length     |Subtype|       |    ADDR_ID    |
+   +---------------+---------------+-------+-------+---------------+
+   |                    Sender's Key-A (64 bits)                   |
+   |                                                               |
+   |                                                               |
+   +---------------------------------------------------------------+
+   |                        HMAC (>=96 bits)                       |
+   |                                                               |
+   |                                                               |
+   :                                                               :
+   +---------------------------------------------------------------+
+    Key-B_fast_hash = crc16(Key-B) & 0x3FF          -> (10bit)
+    HMAC_keys =  HMAC(Key-A+Key-B+Key-B')           -> (>=96bit)
+    HMAC =  (HMAC_keys & ~0x3FF) | Key-B_fast_hash  -> (size HMAC_keys)
+
+
+                          Figure 12: MP_JOIN_CAP
+
+   Computational effort on receiver side is most often expected to be
+   the same as with MP_JOIN.  Key-A ensures identification of related
+   flows Key-B_fast_hash enables MP session even when selected initial
+   flow is not fully established yet (slight computational
+   overhead).HMAC authenticates relationship of initial and potential
+   initital flows.
+
+3.1.3.  Fallback Mechanism
+
+3.1.3.1.  Fallback to MPTCP without RobE_EXT
+
+   This mechanism considers that both sides support MPTCP capability but
+   the receiver does not equipped with RobE_EXT.  MPTCP session with
+   RobE_EXT negotiation will seamlessly fallback to normal MPTCP
+   process.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 17]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                    Host A                              Host B
+          ------------------------                    ----------
+          Address A1    Address A2                    Address B1
+          ----------    ----------                    ----------
+              |             |                             |
+              |      SYN+MP_CAPABLE+ROBE_EXT_EN           |
+              |------------------------------------------>|
+              |             | SYN+MP_CAPABLE+ROBE_EXT_EN  |
+              |             |---------------------------->|
+              |         SYN/ACK+MP_CAPABLE                |
+              |<----------------------------------------->|
+              |             |    SYN/ACK+MP_CAPABLE       |
+              |             |<----------------------------|
+              |       ACK+MP_CAPABLE                      |
+              |------------------------------------------>|
+              |             |          RST                |
+              |             |---------------------------->|
+              |             |       SYN+MP_JOIN           |
+              |             |---------------------------->|
+              |             |     MP_JOIN Process...      |
+              |             |                             |
+
+               Figure 13: Fallback to MPTCP without RobE_EXT
+
+3.1.3.2.  Fallback to Regular TCP
+
+   When the receiver is not MPTCP enabled, MPTCP session with RobE_EXT
+   negotiation will seamlessly fallback to regular process which is
+   illustrated in this section.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 18]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                    Host A                              Host B
+          ------------------------                    ----------
+          Address A1    Address A2                    Address B1
+          ----------    ----------                    ----------
+              |             |                             |
+              |      SYN+MP_CAPABLE+ROBE_EXT_EN           |
+              |------------------------------------------>|
+              |             | SYN+MP_CAPABLE+ROBE_EXT_EN  |
+              |             |---------------------------->|
+              |         SYN/ACK                           |
+              |<----------------------------------------->|
+              |             |    SYN/ACK                  |
+              |             |<----------------------------|
+              |           ACK                             |
+              |------------------------------------------>|
+              |             |          RST                |
+              |             |---------------------------->|
+              |             |   Regular TCP Process...    |
+              |             |                             |
+
+                Figure 14: Fallback to MPTCP without MPTCP
+
+3.1.4.  Security Consideration
+
+   [Tbd]
+
+3.2.  Heuristic Initial Path Selction with Server-RTT Measurement
+
+3.2.1.  Description
+
+   Normally, path RTT can be determined by a time difference between
+   sending a package and an ACK.  For the asymmetric downloading
+   service, the latest RTT for these subflows is calculated by data
+   sender, i.e. application server and transformed to data receiver.
+   Besides "latest RTT", algorithm for estimating the mean RTT by more
+   than one RTT sent from data sender is also proposed.  Figure 15
+   presents the negotiation of this capability between both sides during
+   session establishment when RobE_IPS is enabled on client.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 19]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                  Host A                                Host B
+          ------------------------                    ----------
+          Address A1    Address A2                    Address B1
+          ----------    ----------                    ----------
+              |             |                             |
+              |           SYN+MP_CAPABLE+L_RTT_EN         |
+              |------------------------------------------>|
+              |         SYN/ACK+MP_CAPABLE+L_RTT_EN       |
+              |<------------------------------------------|
+              |               ACK+MP_CAPABLE              |
+              |------------------------------------------>|
+              |      ACK+DSS+L_RTT_EN(latest RTT)+Data    |
+              |------------------------------------------>|
+              |             |       SYN+MP_JOIN           |
+              |             |---------------------------->|
+              |             |     MP_JOIN Process...      |
+              |             |                             |
+
+                    Figure 15: robe_ips_with_server_rtt
+
+3.2.2.  Protocol Adaptation
+
+   Latest RTT calculated by server in asymmetry case should be
+   transferred from server to client.  So a new MPTCP subtype option
+   named L_RTT is allocated for this function.  During three-way
+   handshake L_RTT field is used for negotiation of Server-RTT
+   capability between client and server (in Section 3.2.1).  When both
+   part support the usage of Server-RTT, Latest RTT field is applied for
+   carrying the value of latest RTT computed by server.
+
+                        1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +---------------+---------------+-------+-------+---------------+
+     |     Kind      |    Length     |Subtype|     (reserved)        |
+     +---------------+---------------+-------+-------+---------------+
+     |                    Latest RTT (32 bits)                       |
+     |                                                               |
+     |                                                               |
+     +---------------------------------------------------------------+
+
+                       Figure 16: ROBE_L_RTT_OPTION
+
+3.2.3.  Fallback Mechanism
+
+   When the receiver is not L_RTT enabled, MPTCP session with L_RTT
+   negotiation will seamlessly fallback to normal MPTCP process.
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 20]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+                       Host A                           Host B
+          ------------------------                    ----------
+          Address A1    Address A2                    Address B1
+          ----------    ----------                    ----------
+              |             |                             |
+              |        SYN+MP_CAPABLE+L_RTT_EN            |
+              |------------------------------------------>|
+              |         SYN/ACK+MPTCP_CAPABLE             |
+              |<------------------------------------------|
+              |           ACK+MPTCP_CAPABLE               |
+              |------------------------------------------>|
+              |             |         SYN+MP_JOIN         |
+              |             |---------------------------->|
+              |             |       MP_JOIN Process...    |
+              |             |                             |
+
+             Figure 17: Fallback to MPTCP without RobE_IPS_EXT
+
+3.2.4.  Security Consideration
+
+   [Tbd]
+
+4.  IANA Considerations
+
+   This document defines three new values to MPTCP Option Subtype as
+   following.
+
+   +-------+-------------+--------------------------------+------------+
+   | Value | Symbol      | Name                           | Reference  |
+   +-------+-------------+--------------------------------+------------+
+   | TBD   | ROBE_EXT_EN | RobE_EXT enabled               | Section    |
+   |       |             |                                | 3.1        |
+   +-------+-------------+--------------------------------+------------+
+   | TBD   | MP_JOIN_CAP | Join connection directly in    | Section    |
+   |       |             | RobE_EXT                       | 3.1        |
+   +-------+-------------+--------------------------------+------------+
+   | TBD   | L_RTT_EN    | Server RTT enabled             | Section    |
+   |       |             |                                | 3.2        |
+   +-------+-------------+--------------------------------+------------+
+
+                           RobE Option Subtypes
+
+                       Table 2: RobE Option Subtypes
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 21]
+
+Internet-Draft                 MPTCP RobE                   October 2019
+
+
+5.  Informative References
+
+   [I-D.ietf-mptcp-rfc6824bis]
+              Ford, A., Raiciu, C., Handley, M., Bonaventure, O., and C.
+              Paasch, "TCP Extensions for Multipath Operation with
+              Multiple Addresses", draft-ietf-mptcp-rfc6824bis-18 (work
+              in progress), June 2019.
+
+   [RFC0793]  Postel, J., "Transmission Control Protocol", STD 7,
+              RFC 793, DOI 10.17487/RFC0793, September 1981,
+              <https://www.rfc-editor.org/info/rfc793>.
+
+   [RFC6824]  Ford, A., Raiciu, C., Handley, M., and O. Bonaventure,
+              "TCP Extensions for Multipath Operation with Multiple
+              Addresses", RFC 6824, DOI 10.17487/RFC6824, January 2013,
+              <https://www.rfc-editor.org/info/rfc6824>.
+
+Authors' Addresses
+
+   Markus Amend
+   Deutsche Telekom
+   Deutsche-Telekom-Allee 7
+   64295 Darmstadt
+   Germany
+
+   Email: Markus.Amend@telekom.de
+
+
+   Jiao Kang
+   Huawei
+   D2-03,Huawei Industrial Base
+   Longgang District
+   Shenzhen
+   China
+
+   Email: kangjiao@huawei.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amend & Kang             Expires April 21, 2020                [Page 22]
