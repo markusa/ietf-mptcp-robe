@@ -388,10 +388,12 @@
 <link href="#rfc.section.2.5" rel="Chapter" title="2.5 Combination of RobE_TIMER and RobE_IPS">
 <link href="#rfc.section.3" rel="Chapter" title="3 Implementation with Bi-directional Support">
 <link href="#rfc.section.3.1" rel="Chapter" title="3.1 Simultaneous Initial Paths Extended Version (RobE_eSIM)">
-<link href="#rfc.section.3.1.1" rel="Chapter" title="3.1.1 RobE_eSIM Negotiation and Procedure">
-<link href="#rfc.section.3.1.2" rel="Chapter" title="3.1.2 Protocol Adaptation">
-<link href="#rfc.section.3.1.3" rel="Chapter" title="3.1.3 Fallback Mechanism">
-<link href="#rfc.section.3.1.4" rel="Chapter" title="3.1.4 Security Consideration">
+<link href="#rfc.section.3.1.1" rel="Chapter" title="3.1.1 RobE_eSIM implicit Negotiation and Procedure">
+<link href="#rfc.section.3.1.2" rel="Chapter" title="3.1.2 RobE_eSIM explicit Negotiation and Procedure">
+<link href="#rfc.section.3.1.3" rel="Chapter" title="3.1.3 Protocol Adaptation">
+<link href="#rfc.section.3.1.4" rel="Chapter" title="3.1.4 Fallback Mechanisms">
+<link href="#rfc.section.3.1.5" rel="Chapter" title="3.1.5 Comparison Robe_SIM and RobE_eSIM">
+<link href="#rfc.section.3.1.6" rel="Chapter" title="3.1.6 Security Consideration">
 <link href="#rfc.section.3.2" rel="Chapter" title="3.2 Heuristic Initial Path Selction with Server-RTT Measurement">
 <link href="#rfc.section.3.2.1" rel="Chapter" title="3.2.1 Description">
 <link href="#rfc.section.3.2.2" rel="Chapter" title="3.2.2 Protocol Adaptation">
@@ -495,13 +497,17 @@
 </li>
 <ul><li>3.1.   <a href="#rfc.section.3.1">Simultaneous Initial Paths Extended Version (RobE_eSIM)</a>
 </li>
-<ul><li>3.1.1.   <a href="#rfc.section.3.1.1">RobE_eSIM Negotiation and Procedure</a>
+<ul><li>3.1.1.   <a href="#rfc.section.3.1.1">RobE_eSIM implicit Negotiation and Procedure</a>
 </li>
-<li>3.1.2.   <a href="#rfc.section.3.1.2">Protocol Adaptation</a>
+<li>3.1.2.   <a href="#rfc.section.3.1.2">RobE_eSIM explicit Negotiation and Procedure</a>
 </li>
-<li>3.1.3.   <a href="#rfc.section.3.1.3">Fallback Mechanism</a>
+<li>3.1.3.   <a href="#rfc.section.3.1.3">Protocol Adaptation</a>
 </li>
-<li>3.1.4.   <a href="#rfc.section.3.1.4">Security Consideration</a>
+<li>3.1.4.   <a href="#rfc.section.3.1.4">Fallback Mechanisms</a>
+</li>
+<li>3.1.5.   <a href="#rfc.section.3.1.5">Comparison Robe_SIM and RobE_eSIM</a>
+</li>
+<li>3.1.6.   <a href="#rfc.section.3.1.6">Security Consideration</a>
 </li>
 </ul><li>3.2.   <a href="#rfc.section.3.2">Heuristic Initial Path Selction with Server-RTT Measurement</a>
 </li>
@@ -527,12 +533,43 @@
 <a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a>
 </h1>
 <p id="rfc.section.1.p.1">Multipath TCP Robust Session Establishment (MPTCP RobE) is a set of extensions to regular MPTCP <a href="#RFC6824" class="xref">[RFC6824]</a> and its next upcoming version <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>, which releases single path limitations during the initial connection setup.  Several scenarios require and benefit from a reliable and in time connection setup which is not covered by <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> so far.  MPTCP was designed to be compliant with the TCP standard <a href="#RFC0793" class="xref">[RFC0793]</a> and introduced therefore the concept of an initial TCP flow while adding subsequent flows after successful multipath negotiation on the initial path.  While fulfilling its purpose, MPTCP is however fully dependent on the transmission characteristics of the communication link selected for initiating MPTCP.</p>
-<p id="rfc.section.1.p.2">Multipath TCP itself enables hosts to exchange packets belonging to a single connection over several paths. Implemented in mobile phones (UEs), these paths are usually assigned to different network interfaces within the UE and corresponds to different networks such as cellular and WiFi. The path or network interface for initiating the initial subflow setup is most often provided by the operation system of the UE. For example, if LTE and WiFi are present in a mobile phone, WiFi is usually the interface offered to initiate the MPTCP session.</p>
-<p id="rfc.section.1.p.3">This design falls short in situations where the default path does not provide the best performance compared to other available paths. In a worst case the default path is not even capable of setting up the initial flow letting any other functional path unused. For example, if the WiFi signal is weak, broken or cannot forward traffic to the destination, the establishment of the subflow will be delayed or impossible. This in turn, leads to a longer startup delay or no communication at all for services using MPTCP even if other functional paths are available. Even in scenarios where all paths are functional but services would benefit from a setup over the path with the lowest latency, MPTCP has no mean to support this demand.</p>
-<p id="rfc.section.1.p.4">It can be concluded, that sequential path establishment relying with an initial path establishment over an external given default route will result in experience reduction when using MPTCP. So this document proposes solutions to overcome the aforementioned limitations and provides a more robust connection setup compared to traditional MPTCP.</p>
-<p id="rfc.section.1.p.5">RobE_SIM and RobE_eSIM aims to overcome the limitations of <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>,using one initial flow and introduces the concept of potential initial flows triggered simultaneously.  Potential initial flows gives the freedom to use more than one path to request multipath capability and select the initial flow at a later point.  RobE_SIM is a break-before-make mechanism, guaranteeing at least the robust connection establishment, however the RobE_eSIM reuses every potential initial flow request to combine it with less overhead and accelerated multipath availability, leveraging a new MPTCP option MP_JOIN_CAP. From a standardization perspective, the RobE_SIM is fully compliant with <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> and is herein more of a descriptive and procedural nature. The RobE_eSIM requires a new MPTCP option but with the potential to significantly improve the MPTCP experience.</p>
-<p id="rfc.section.1.p.6">For the limitation of the default initial path, RobE_IPS makes no changes to standard MPTCP procedure and improves the performance of connection establishment by introducing an initial path selection strategy and required algorithms. The input for strategy and algorithms is the transmission status information which represents the transmission performance of each available path or network interface. The transmission status information is characterized by at least one of the parameters: signal strength, throughput, round-trip time (RTT) and link success rate. In this way, a path with better transmission performance can be learned and determined and the repsective network interface can be used for connection establishment.</p>
-<p id="rfc.section.1.p.7">The most simple approach for a robust MPTCP session establishment is RobE_TIMER, iterating the process of initial path establishment over all available paths, if the previous try has failed. Triggering a new try on a next path is depending on an expiration timer, preferably re-use TCP's in-built expiration timer.</p>
+<div id="rfc.figure.1"></div>
+<div id="ref-mptcp-signaling"></div>
+<pre>
+            Host A                                  Host B
+     ------------------------                       ----------
+     Address A1    Address A2                       Address B1
+     ----------    ----------                       ----------
+         |             |                                |
+         |            SYN + MP_CAPABLE(Key-A[*])        |
+         |---------------------------------------------&gt;|
+         |&lt;---------------------------------------------|
+         |          SYN/ACK + MP_CAPABLE(Key-B)         |
+         |             |                                |
+         |        ACK + MP_CAPABLE(Key-A, Key-B)        |
+         |---------------------------------------------&gt;|
+         |             |                                |
+         |             |   SYN + MP_JOIN(Token-B, R-A)  |
+         |             |-------------------------------&gt;|
+         |             |&lt;-------------------------------|
+         |             | SYN/ACK + MP_JOIN(HMAC-B, R-B) |
+         |             |                                |
+         |             |     ACK + MP_JOIN(HMAC-A)      |
+         |             |-------------------------------&gt;|
+         |             |&lt;-------------------------------|
+         |             |             ACK                |
+
+         [*] Key-A in the first MP-capable is related to
+             RFC6824 only and does not exist in RFC6824bis.
+	     </pre>
+<p class="figure">Figure 1: MPTCP connection setup</p>
+<p><a href="#ref-mptcp-signaling" class="xref">Figure 1</a> shows the traditional way of MPTCP handshaking with a MP_CAPABLE first, followed when successful negotiated by additional flows engaging MP_JOIN. <a href="#RFC6824" class="xref">[RFC6824]</a> and the upcoming next MPTCP <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> differ in that a Key-A is sent with the first MP_CAPABLE or not.  </p>
+<p id="rfc.section.1.p.3">Multipath TCP itself enables hosts to exchange packets belonging to a single connection over several paths. Implemented in mobile phones (UEs), these paths are usually assigned to different network interfaces within the UE and corresponds to different networks such as cellular and WiFi. The path or network interface for initiating the initial subflow setup is most often provided by the operation system of the UE. For example, if LTE and WiFi are present in a mobile phone, WiFi is usually the interface offered to initiate the MPTCP session.</p>
+<p id="rfc.section.1.p.4">This design falls short in situations where the default path does not provide the best performance compared to other available paths. In a worst case the default path is not even capable of setting up the initial flow letting any other functional path unused. For example, if the WiFi signal is weak, broken or cannot forward traffic to the destination, the establishment of the subflow will be delayed or impossible. This in turn, leads to a longer startup delay or no communication at all for services using MPTCP even if other functional paths are available. Even in scenarios where all paths are functional but services would benefit from a setup over the path with the lowest latency, MPTCP has no mean to support this demand.</p>
+<p id="rfc.section.1.p.5">It can be concluded, that sequential path establishment relying with an initial path establishment over an external given default route will result in experience reduction when using MPTCP. So this document proposes solutions to overcome the aforementioned limitations and provides a more robust connection setup compared to traditional MPTCP.</p>
+<p id="rfc.section.1.p.6">RobE_SIM and RobE_eSIM aims to overcome the limitations of <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>,using one initial flow and introduces the concept of potential initial flows triggered simultaneously.  Potential initial flows gives the freedom to use more than one path to request multipath capability and select the initial flow at a later point.  RobE_SIM is a break-before-make mechanism, guaranteeing at least the robust connection establishment, however the RobE_eSIM reuses every potential initial flow request to combine it with less overhead and accelerated multipath availability, leveraging a new MPTCP option MP_JOIN_CAP. From a standardization perspective, the RobE_SIM is fully compliant with <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> and is herein more of a descriptive and procedural nature. The RobE_eSIM requires a new MPTCP option but with the potential to significantly improve the MPTCP experience.</p>
+<p id="rfc.section.1.p.7">For the limitation of the default initial path, RobE_IPS makes no changes to standard MPTCP procedure and improves the performance of connection establishment by introducing an initial path selection strategy and required algorithms. The input for strategy and algorithms is the transmission status information which represents the transmission performance of each available path or network interface. The transmission status information is characterized by at least one of the parameters: signal strength, throughput, round-trip time (RTT) and link success rate. In this way, a path with better transmission performance can be learned and determined and the repsective network interface can be used for connection establishment.</p>
+<p id="rfc.section.1.p.8">The most simple approach for a robust MPTCP session establishment is RobE_TIMER, iterating the process of initial path establishment over all available paths, if the previous try has failed. Triggering a new try on a next path is depending on an expiration timer, preferably re-use TCP's in-built expiration timer.</p>
 <p><a href="#table_robe_features" class="xref">Table 1</a> summarizes the impact of RobE_TIMER, RobE_SIM, RobE_eSIM and RobE_IPS compared to <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>.</p>
 <div id="rfc.table.1"></div>
 <div id="table_robe_features"></div>
@@ -610,7 +647,7 @@
 </h1>
 <p id="rfc.section.2.1.p.1">In RobE_TIMER, a new connection is initiated by sending a SYN+MP_CAPABLE along the initial path. If this path is functional, the solution will perform identical to classic MPTCP: the initial flow will be established, and subsequent flows can be created afterwards. If however the initial path is faulty, the retransmission will be triggered on another path. This path might circumvent the dysfunctional network, and allow the client to create an initial subflow. The first path is now seen as a subsequent path and the client sends SYN+MP_JOIN messages to create a subsequent flow.</p>
 <p id="rfc.section.2.1.p.2">In high latency networks, the initial SYN+MP_CAPABLE might be delayed until the client retries on another path. Once the second SYN arrives at the server, it will try to complete the three-way handshake. If the first SYN was delayed by more than the retransmission time plus half a Round Trip Time (RTT) of the second path, it will arrive at the server after the second SYN. The server could now treat the segment as obsolete and drop it. </p>
-<div id="rfc.figure.1"></div>
+<div id="rfc.figure.2"></div>
 <div id="ref-timer"></div>
 <pre>
        Host A                                    Host B
@@ -634,43 +671,44 @@ Address A1    Address A2                       Address B1
      [*] Key-A in the first MP-capable is related to
        MPTCP v0 only and does not exist in MPTCP v1.
 </pre>
-<p class="figure">Figure 1: The Robe_TIMER Solution</p>
+<p class="figure">Figure 2: The Robe_TIMER Solution</p>
 <p></p>
 <p id="rfc.section.2.1.p.4">Immediately after sending the ACK, subflows are established on the remaining paths as defined in <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a></p>
 <p id="rfc.section.2.1.p.5">[Notes: How to set the Timer is TBD. If there is the case that the first SYN on default path arrives earlier than that from the second path, the MPTCP connection will be initialized on the path of the first SYN.The server could treat the second SYN as obsolete and drop it.]</p>
 <h1 id="rfc.section.2.2">
 <a href="#rfc.section.2.2">2.2.</a> <a href="#robe_sim" id="robe_sim">Simultaneous Initial Paths Simple Version (RobE_SIM)</a>
 </h1>
-<p id="rfc.section.2.2.p.1">RobE_SIM is sender only implementation and no negotiation is required. In RobE_SIM, the MPTCP connection setup benefits from the fastest path. As shown in <a href="#ref_mptcp_robe_sim_signaling" class="xref">Figure 2</a>, host A initiates the connection handshake on more than one path. The paths selected for RobE_SIM and referred to as potential initital flows can belong to the number of interfaces on the device or a subset selected on experience. When host A receives the first SYN/ACK back from host B, the path carrying this message is identified as the normal initial path. Host A sends then immediately a TCP RST message on any other path used for simultaneous connection setup for termination (break-before-make). The terminated ones are merged as subsequent subflows following the JOIN procedure in <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>.</p>
-<div id="rfc.figure.2"></div>
+<p id="rfc.section.2.2.p.1">RobE_SIM is a sender only implementation and no negotiation is required. In RobE_SIM, the MPTCP connection setup benefits from the fastest path. As shown in <a href="#ref_mptcp_robe_sim_signaling" class="xref">Figure 3</a>, host A initiates the connection handshake on more than one path independently (SA1 and SA2). The paths selected for RobE_SIM and referred to as potential initital flows, can belong to the number of interfaces on the device or a subset selected on experience. When Host A receives the first SYN/ACK back from Host B (SA3), the path carrying this message is identified as the normal initial path. Host A sends then immediately a TCP RST message (SA6.1) on any other path used for simultaneous connection setup for termination (break-before-make). The terminated ones are merged as subsequent subflows following the JOIN procedure described in <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>. The process is equivalent to any other scenario where the SYN/ACK arrives on an other path than depicted in <a href="#ref_mptcp_robe_sim_signaling" class="xref">Figure 3</a>.</p>
+<div id="rfc.figure.3"></div>
 <div id="ref_mptcp_robe_sim_signaling"></div>
 <pre>
-         Host A                                  Host B
-------------------------                       ----------
-Address A1    Address A2                       Address B1
-----------    ----------                       ----------
-    |             |                                |
-    |        SYN + MP_CAPABLE(Key-A[*])            |
-    |---------------------------------------------&gt;|
-    |             |  SYN + MP_CAPABLE(Key-A'[*])   |
-    |             |-------------------------------&gt;|
-    |        SYN/ACK + MP_CAPABLE(Key-B)           |
-    |&lt;--------------------------------------------&gt;|
-    |             |  SYN/ACK + MP_CAPABLE(Key-B')  |
-    |             |&lt;-------------------------------|
-    |        ACK + MP_CAPABLE(Key-A, Key-B)        |
-    |---------------------------------------------&gt;|
-    |             |             RST                |
-    |             |-------------------------------&gt;|
-    |             |  SYN + MP_JOIN(Token-B,R-A)    |
-    |             |-------------------------------&gt;| 
-    |             |  MP_JOIN Process...            | 
-    |             |                                | 
+                Host A                                  Host B
+        ------------------------                       ----------
+        Address A1    Address A2                       Address B1
+        ----------    ----------                       ----------
+            |             |                                |
+            |            SYN + MP_CAPABLE(Key-A[*])        |
+    (SA1)   |---------------------------------------------&gt;|  (SB1)
+            |             |    SYN + MP_CAPABLE(Key-A'[*]) |
+    (SA2)   |             |-------------------------------&gt;|  (SB2)
+            |             |                                |
+    (SA3)   |&lt;---------------------------------------------|  (SB3)
+            |          SYN/ACK + MP_CAPABLE(Key-B)         |
+    (SA4)   |             |&lt;-------------------------------|  (SB4)
+            |             |   SYN/ACK + MP_CAPABLE(Key-B') |
+            |             |                                |
+            |        ACK + MP_CAPABLE(Key-A, Key-B)        |
+    (SA5)   |---------------------------------------------&gt;|  (SB5)
+            |             |             RST                |
+    (SA6.1) |             |-------------------------------&gt;|  (SB6.1)
+   RobE SIM |             |   SYN + MP_JOIN(Token-B, R-A)  |
+   (robust) |             |-------------------------------&gt;|
+            |             |         MP_JOIN Process...     |
 
-    [*] Key-A in the first MP-capable is related to
-      MPTCP v0 only and does not exist in MPTCP v1.
-</pre>
-<p class="figure">Figure 2: MPTCP RobE_SIM Connection Setup</p>
+            [*] Key-A in the first MP-capable is related to
+                RFC6824 only and does not exist in RFC6824bis.
+			</pre>
+<p class="figure">Figure 3: MPTCP RobE_SIM Connection Setup</p>
 <p></p>
 <h1 id="rfc.section.2.3">
 <a href="#rfc.section.2.3">2.3.</a> <a href="#robe_ips" id="robe_ips">Heuristic Initial Path Selection (RobE_IPS)</a>
@@ -678,8 +716,8 @@ Address A1    Address A2                       Address B1
 <h1 id="rfc.section.2.3.1">
 <a href="#rfc.section.2.3.1">2.3.1.</a> <a href="#arc_1" id="arc_1">Architecture</a>
 </h1>
-<p><a href="#ref_ips_arc" class="xref">Figure 3</a> provides the architecture for RobE_IPS and employs an "Initial Path Selection" logic which can be integrated into the MPTCP stack or exists as an isolated module in the terminal. The IPS logic has access to a set of transmission status information for each available path or its belonging netowrk interfaces. When an application starts a first communication, IPS selects based on the available path transmission characteristics the path with the highest probability to succeed.</p>
-<div id="rfc.figure.3"></div>
+<p><a href="#ref_ips_arc" class="xref">Figure 4</a> provides the architecture for RobE_IPS and employs an "Initial Path Selection" logic which can be integrated into the MPTCP stack or exists as an isolated module in the terminal. The IPS logic has access to a set of transmission status information for each available path or its belonging netowrk interfaces. When an application starts a first communication, IPS selects based on the available path transmission characteristics the path with the highest probability to succeed.</p>
+<div id="rfc.figure.4"></div>
 <div id="ref_ips_arc"></div>
 <pre>		  
 +-------------------+              +-------------------+    
@@ -698,13 +736,13 @@ Address A1    Address A2                       Address B1
 |  +-------------+  |              |  +-------------+  |
 +-------------------+              +-------------------+		       
 </pre>
-<p class="figure">Figure 3: Architecture for Initial-path Selection</p>
+<p class="figure">Figure 4: Architecture for Initial-path Selection</p>
 <p></p>
 <h1 id="rfc.section.2.3.2">
 <a href="#rfc.section.2.3.2">2.3.2.</a> <a href="#typical_flow_1" id="typical_flow_1">Typical Scenarios</a>
 </h1>
-<p id="rfc.section.2.3.2.p.1">Two typical RobE_IPS scenarios are presented in this section. <a href="#ref_mptcp_robe_ips_est" class="xref">Figure 4</a> shows that the "Initial Path Selection" logic executed for each MPTCP connection establishment. On the other hand <a href="#ref_mptcp_robe_ips_default" class="xref">Figure 5</a> describes that "Initial Path Selection" in case no path information are available. Considering the fact that no heuristics are given before a recent MPTCP connection was established, the default initial path can be adopted. Further combinations and implementations with more or less sophisticated heuristics are possible.</p>
-<div id="rfc.figure.4"></div>
+<p id="rfc.section.2.3.2.p.1">Two typical RobE_IPS scenarios are presented in this section. <a href="#ref_mptcp_robe_ips_est" class="xref">Figure 5</a> shows that the "Initial Path Selection" logic executed for each MPTCP connection establishment. On the other hand <a href="#ref_mptcp_robe_ips_default" class="xref">Figure 6</a> describes that "Initial Path Selection" in case no path information are available. Considering the fact that no heuristics are given before a recent MPTCP connection was established, the default initial path can be adopted. Further combinations and implementations with more or less sophisticated heuristics are possible.</p>
+<div id="rfc.figure.5"></div>
 <div id="ref_mptcp_robe_ips_est"></div>
 <pre>    
      +---------------+                        
@@ -733,8 +771,8 @@ Address A1    Address A2                       Address B1
              |Yes         		           
              V			
 </pre>
-<p class="figure">Figure 4: RobE_IPS for each connection establishment</p>
-<div id="rfc.figure.5"></div>
+<p class="figure">Figure 5: RobE_IPS for each connection establishment</p>
+<div id="rfc.figure.6"></div>
 <div id="ref_mptcp_robe_ips_default"></div>
 <pre>     
        +--------------+                        
@@ -764,14 +802,14 @@ Address A1    Address A2                       Address B1
 |              |                   |     
 |              V                   |
 |No    +--------------+            |
-+------|Successfully? |&lt;-----------+
++------|Successful? |&lt;-----------+
        +--------------+			
                |Yes         		           
                V			
 
           </pre>
-<p class="figure">Figure 5: RobE_IPS using default route when no meaningful heuristic available</p>
-<div id="rfc.figure.6"></div>
+<p class="figure">Figure 6: RobE_IPS using default route when no meaningful heuristic available</p>
+<div id="rfc.figure.7"></div>
 <div id="ref_mptcp_robe_ips_proc"></div>
 <pre>
 
@@ -808,8 +846,8 @@ Address A1    Address A2                       Address B1
              |                      
              V                   			
 </pre>
-<p class="figure">Figure 6: Implementation process for Initial Path Selection</p>
-<p><a href="#ref_mptcp_robe_ips_proc" class="xref">Figure 6</a> shows the process flow of "Initial Path Selection". Upon a request from an application, the IPS logic will acquire transmission status information which represents the transmission performance of each available path or network interface and evaluate it. The transmission status information is characterized by at least one of the parameters: signal strength, throughput, round-trip time (RTT) and link success rate. In this way, the path with the best transmission performance can be determined and used for connection establishment.  </p>
+<p class="figure">Figure 7: Implementation process for Initial Path Selection</p>
+<p><a href="#ref_mptcp_robe_ips_proc" class="xref">Figure 7</a> shows the process flow of "Initial Path Selection". Upon a request from an application, the IPS logic will acquire transmission status information which represents the transmission performance of each available path or network interface and evaluate it. The transmission status information is characterized by at least one of the parameters: signal strength, throughput, round-trip time (RTT) and link success rate. In this way, the path with the best transmission performance can be determined and used for connection establishment.  </p>
 <h1 id="rfc.section.2.3.3">
 <a href="#rfc.section.2.3.3">2.3.3.</a> <a href="#path_decision_info" id="path_decision_info">Path decision information</a>
 </h1>
@@ -820,10 +858,12 @@ Address A1    Address A2                       Address B1
 <li>Application level: application name, domain name, port number and location.</li>
 <li>Transport-layer level: RTT, CWND, Error rate.</li>
 </ul>
+
+<p> </p>
 <h1 id="rfc.section.2.3.4">
 <a href="#rfc.section.2.3.4">2.3.4.</a> <a href="#initial_path_selected_on_RTT" id="initial_path_selected_on_RTT">Initial Path Selection use local RTT information</a>
 </h1>
-<div id="rfc.figure.7"></div>
+<div id="rfc.figure.8"></div>
 <div id="ref_mptcp_robe_ips_rtt"></div>
 <pre>    
 +-------------------+                        
@@ -842,12 +882,12 @@ Address A1    Address A2                       Address B1
 |    initial path   |   |  initial path  |
 +-------------------+   +----------------+			
 </pre>
-<p class="figure">Figure 7: Initial-path Selection based on RTT</p>
-<p><a href="#ref_mptcp_robe_ips_rtt" class="xref">Figure 7</a> presents a "Initial Path Selection" logic based on RTT, e.g. assuming two paths over LTE and WiFi access. RTT calculation on the transport layer usually reflect the time when an information is sent and an related acknowledgment received. For an asymmetric usage (e.g. download only) of a communication it might happen that recent RTT calculation is only available on sender side which is possibly not the side which employs the IPS logic. A solution for this can be found in <a href="#robe_ips_ext" class="xref">Section 3.2</a>. Instead of using the most recent RTT value of a path a filtered value consisitng of several measured RTTs can be used. A RTT can also be derived from link layer information but may has a limited meaning when it does not picture the end-to-end latency.  </p>
+<p class="figure">Figure 8: Initial-path Selection based on RTT</p>
+<p><a href="#ref_mptcp_robe_ips_rtt" class="xref">Figure 8</a> presents a "Initial Path Selection" logic based on RTT, e.g. assuming two paths over LTE and WiFi access. RTT calculation on the transport layer usually reflect the time when an information is sent and an related acknowledgment received. For an asymmetric usage (e.g. download only) of a communication it might happen that recent RTT calculation is only available on sender side which is possibly not the side which employs the IPS logic. A solution for this can be found in <a href="#robe_ips_ext" class="xref">Section 3.2</a>. Instead of using the most recent RTT value of a path a filtered value consisitng of several measured RTTs can be used. A RTT can also be derived from link layer information but may has a limited meaning when it does not picture the end-to-end latency.  </p>
 <h1 id="rfc.section.2.4">
 <a href="#rfc.section.2.4">2.4.</a> <a href="#comb_sim_and_ips" id="comb_sim_and_ips">Combination of RobE_SIM and RobE_IPS</a>
 </h1>
-<div id="rfc.figure.8"></div>
+<div id="rfc.figure.9"></div>
 <div id="ref_mptcp_comb_robe_sim_ips"></div>
 <pre>    
        +--------------+                        
@@ -881,13 +921,13 @@ Network+---------------+
 Problem        |Yes                    
                V				   
 </pre>
-<p class="figure">Figure 8: Combination of RobE_SIM and RobE_IPS</p>
-<p id="rfc.section.2.4.p.1">In an implementation, a single solution may not be sufficient to get an expected behavior. Combination of approaches to improve robustness is recommended therefore. <a href="#ref_mptcp_comb_robe_sim_ips" class="xref">Figure 8</a> shows the combination of RobE_SIM and RobE_IPS. RobE_SIM can be used at the very beginning when the sender is absent of path information followed by RobE_IPS for consecutive connections.  </p>
+<p class="figure">Figure 9: Combination of RobE_SIM and RobE_IPS</p>
+<p id="rfc.section.2.4.p.1">In an implementation, a single solution may not be sufficient to get an expected behavior. Combination of approaches to improve robustness is recommended therefore. <a href="#ref_mptcp_comb_robe_sim_ips" class="xref">Figure 9</a> shows the combination of RobE_SIM and RobE_IPS. RobE_SIM can be used at the very beginning when the sender is absent of path information followed by RobE_IPS for consecutive connections.  </p>
 <h1 id="rfc.section.2.5">
 <a href="#rfc.section.2.5">2.5.</a> <a href="#comb_timer_and_ips" id="comb_timer_and_ips">Combination of RobE_TIMER and RobE_IPS</a>
 </h1>
-<p id="rfc.section.2.5.p.1">Since RobE_IPS does not guarentee that session can be set up on the selection of initial path, it can also be combined with RobE_TIMER which generates less overhead compared to <a href="#comb_sim_and_ips" class="xref">Section 2.4</a>. It depends on the algorithm and policy. So RobE_Timer can be introduced to optimizeze the control of path switching when the initial path can not work as normal. When the system enables RobE_IPS and uses the selected initial path for session establishment,it sets the timer for path switching. When timer is up, the system will change to another path for re-establish connection considering the requirement for delay time from application. </p>
-<div id="rfc.figure.9"></div>
+<p id="rfc.section.2.5.p.1">Since RobE_IPS solely does not guarentee that session can be set up on the selection of initial path, it can also be combined with RobE_TIMER which generates less overhead compared to the combination with RobE_SIM in <a href="#comb_sim_and_ips" class="xref">Section 2.4</a> and guarantess session setup. RobE_TIMER can be introduced to optimize the control of path switching when the initial path selected by RobE_IPS is dysfunctional. When the system enables RobE_IPS and uses the selected initial path for session establishment,it sets the timer for path switching. When timer is expired, the system will change to another path to re-establish connection according to <a href="#robe_timer" class="xref">Section 2.1</a>. </p>
+<div id="rfc.figure.10"></div>
 <div id="ref_mptcp_comb_robe_timer_ips"></div>
 <pre>    
        +---------------+                        
@@ -920,54 +960,104 @@ Network+---------------+
 Problem        |Yes                    
                V				   
 </pre>
-<p class="figure">Figure 9: Combination of RobE_Timer and RobE_IPS</p>
+<p class="figure">Figure 10: Combination of RobE_Timer and RobE_IPS</p>
 <p></p>
 <h1 id="rfc.section.3">
 <a href="#rfc.section.3">3.</a> <a href="#bi_impl" id="bi_impl">Implementation with Bi-directional Support</a>
 </h1>
+<p id="rfc.section.3.p.1">Solutions which requires bi-directional support between two MPTCP hosts promise to have better and possibly more features. However, they cannot be defined without extending current standards in <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>. The RobE_SIM and RobE_IPS approach are both capable of profit from an explicit support of the remote end host and defined within this section.</p>
 <h1 id="rfc.section.3.1">
 <a href="#rfc.section.3.1">3.1.</a> <a href="#robe_ext" id="robe_ext">Simultaneous Initial Paths Extended Version (RobE_eSIM)</a>
 </h1>
-<p id="rfc.section.3.1.p.1">RobE_eSIM extends RobE_SIM by reusing the potential initial flows. This eliminates the overhead from RobE_SIM with introducing new option MP_JOIN_CAP and accelerate the transmission speed by early availablity of multiple paths. Further it relaxes the dependency on a reliable third ACK of the 3-way handshake in MPTCP v1.</p>
+<p id="rfc.section.3.1.p.1">RobE_eSIM extends RobE_SIM by reusing the potential initial flows. This eliminates the overhead from RobE_SIM with introducing new option MP_JOIN_CAP and accelerate the transmission speed by early availablity of multiple paths. Further it relaxes the dependency on a reliable third ACK of the 3-way handshake in <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>. Remote endpoint support can be negotiated in two ways, an implicit in <a href="#robe_esim_implicit" class="xref">Section 3.1.1</a> or explicit in <a href="#robe_esim_explicit" class="xref">Section 3.1.2</a></p>
 <h1 id="rfc.section.3.1.1">
-<a href="#rfc.section.3.1.1">3.1.1.</a> <a href="#robe_ext_neg" id="robe_ext_neg">RobE_eSIM Negotiation and Procedure</a>
+<a href="#rfc.section.3.1.1">3.1.1.</a> <a href="#robe_esim_implicit" id="robe_esim_implicit">RobE_eSIM implicit Negotiation and Procedure</a>
 </h1>
-<p id="rfc.section.3.1.1.p.1">This section is used in the scenario that both sides support MPTCP and RobE_eSIM. Host A initiates connection on path A1-&gt;B1 and A2-&gt;B2 by SYN with a subtype set to RobE_eSIM_EN in addition to MPTCP_CAPABLE. The receiver returns SYN/ACK also with a RobE_eSIM_EN option if it supports RobE_eSIM. The path with first SYN/ACK will be selected as initial subflow. Host A sends the new MP_JOIN_CAP option on all the other subflows to immediately merge them with initial subflow.</p>
-<div id="rfc.figure.10"></div>
+<p id="rfc.section.3.1.1.p.1">Similar to RobE_SIM in <a href="#robe_sim" class="xref">Section 2.2</a> the establishment process of <a href="#RFC6824" class="xref">[RFC6824]</a> or <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> is applied independently on multiple path simultaneously. In <a href="#ref_mptcp_robe_eSIM_implicit_signaling" class="xref">Figure 11</a> this is shown in SA1 and SA2. The first path which returns a SYN/ACK (e.g. SA3) is selected as the initial path and proceed with the traditional establishment process (SA5). Any other path which has to send the final ACK of the 3-way handshake includes a new option MP_JOIN_CAP (see definition in <a href="#mp_join_cap_opt" class="xref">Section 3.1.3.2</a>) instead of a MP_CAPABLE (SA6.2).</p>
+<div id="rfc.figure.11"></div>
+<div id="ref_mptcp_robe_eSIM_implicit_signaling"></div>
+<pre>
+                Host A                                  Host B
+        ------------------------                       ----------
+        Address A1    Address A2                       Address B1
+        ----------    ----------                       ----------
+            |             |                                |
+            |            SYN + MP_CAPABLE(Key-A[*])        |
+    (SA1)   |---------------------------------------------&gt;|  (SB1)
+            |             |    SYN + MP_CAPABLE(Key-A'[*]) |
+    (SA2)   |             |-------------------------------&gt;|  (SB2)
+            |             |                                |
+    (SA3)   |&lt;---------------------------------------------|  (SB3)
+            |          SYN/ACK + MP_CAPABLE(Key-B)         |
+    (SA4)   |             |&lt;-------------------------------|  (SB4)
+            |             |   SYN/ACK + MP_CAPABLE(Key-B') |
+            |             |                                |
+            |        ACK + MP_CAPABLE(Key-A, Key-B)        |
+    (SA5)   |---------------------------------------------&gt;|  (SB5)
+            |             |                                |
+    (SA6.2) |             |                                |  (SB6.2)
+   RobE EXT |             | ACK + MP_JOIN_CAP(Key-A, HMAC) |
+   (+fast)  |             |-------------------------------&gt;|
+
+            [*] Key-A in the first MP-capable is related to
+                RFC6824 only and does not exist in RFC6824bis.
+		</pre>
+<p class="figure">Figure 11: MPTCP RobE_eSIM implicit Connection Setup</p>
+<p></p>
+<p id="rfc.section.3.1.1.p.3">Following the possible process in <a href="#ref_mptcp_robe_eSIM_implicit_signaling" class="xref">Figure 11</a>, two further constellations are imaginable and elaborated below.  </p>
+
+<ol>
+<li>In the flow diagram <a href="#ref-mptcp-robe-sim-and-robe-ext-signaling" class="xref">Figure 17</a>, A1&#8596;B1 is assumed to be the initial flow. A2&#8596;B1 shall be recycled and the ACK is sent with MP_JOIN_CAP. Furthermore, the MP_CAPABLE arrives first at Host B (SB5) and the MP_JOIN_CAP afterwards (SB6.2). When the MP_JOIN_CAP is received, Host B has to iterate over the connection list once (like MP_JOIN) and check for Key-A availability. If a Key-A connection is found, this one is validated against the HMAC value. The validation has two reasons: first, several Key-A can exist, because different hosts may choose the same Key-A by accident. Furthermore, no one can join a connection by just recording/brute-forcing Key-A and duplicating the request.</li>
+<li>Like above, but MP_JOIN_CAP arrives before last MP_CAPABLE at Host B <ul>
+<li>
+<a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>; Based on Key-A, Host B will iterate over the connection list, but it will not find a match, because Key-A of the previous selected initial flow (SA3, SA5) has not arrived yet. So it will continue with a fast iteration only over the connections which are still in establishment phase using the 10 bit Key-B fast hash (crc16(Key-B) &amp; 0x3FF). If it matches against a (precomputed) existing Key-B_fast_hash in the connection list, it will validate the request using the HMAC(Key-A+B+B') to ensure legitimation. If successful, both, the initial flow and the MP_JOIN_CAP flow, can be immediately established. This is true, because without the knowledge of Key-B, Host A could not calculate the HMAC. So it is clear, that Host A had received the SYN/ACK (SB3). This also mitigates the exchange of a reliable ACK during the handshake process. MPTCP sends the Key-A only with the last ACK and therefore prevents subsequent flow establishment until successful reception at Host B. Using RobE_EXT, the reception of a MP_JOIN_CAP (<a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a>) is sufficient to establish both, the path carrying Key-B and Key-B'.</li>
+<li>
+<a href="#RFC6824" class="xref">[RFC6824]</a>; Can match based on Key-A, same effort as for a MP JOIN.</li>
+</ul>
+</li>
+<li>A2&#8596;B1 is selected as initial flow, because the respective SYN/ACK returns earlier at Host A. It is the same as above, just the other way round.</li>
+</ol>
+
+<p> </p>
+<h1 id="rfc.section.3.1.2">
+<a href="#rfc.section.3.1.2">3.1.2.</a> <a href="#robe_esim_explicit" id="robe_esim_explicit">RobE_eSIM explicit Negotiation and Procedure</a>
+</h1>
+<p id="rfc.section.3.1.2.p.1">Extending the implicit RobE_eSIM with an explicit negotiation requires a new option ROBE_eSIM_EN exchanged during the handshake</p>
+<div id="rfc.figure.12"></div>
 <div id="ref_mptcp_robe_eSIM_signaling"></div>
 <pre>
          Host A                                        Host B
 ------------------------                             ----------
 Address A1    Address A2                             Address B1
 ----------    ----------                             ----------
-    |             |                                       |
+    |             |                                        |
     |      SYN+MP_CAPABLE+ROBE_eSIM_EN(Key-A[*])           |
-    |----------------------------------------------------&gt;|
+    |-----------------------------------------------------&gt;|
     |             | SYN+MP_CAPABLE+ROBE_eSIM_EN(Key-A'[*]) |
-    |             |--------------------------------------&gt;|
+    |             |---------------------------------------&gt;|
     |      SYN/ACK+MP_CAPABLE+ROBE_eSIM_EN(Key-B)          |
-    |&lt;---------------------------------------------------&gt;|
+    |&lt;----------------------------------------------------&gt;|
     |             | SYN/ACK+MP_CAPABLE+ROBE_eSIM_EN(Key-B')|
-    |             |&lt;--------------------------------------|
-    |       ACK+MP_CAPABLE+ROBE_eSIM_EN(Key-A,Key-B)       |
-    |----------------------------------------------------&gt;|
-    |             |                                       |  
-    |             |  ACK+MP_JOIN_CAP(Key-A,HMAC)          |
-    |             |--------------------------------------&gt;| 
-    |             |                                       | 
+    |             |&lt;---------------------------------------|
+    |      ACK+MP_CAPABLE(Key-A,Key-B)                     |
+    |-----------------------------------------------------&gt;|
+    |             |                                        |  
+    |             |  ACK+MP_JOIN_CAP(Key-A,HMAC)           |
+    |             |---------------------------------------&gt;| 
+    |             |                                        | 
 
       [*] Key-A in the first MP-capable is related to
-         MPTCP v0 only and does not exist in MPTCP v1.
+          RFC6824 only and does not exist in RFC6824bis.
 </pre>
-<p class="figure">Figure 10: MPTCP RobE_eSIM Connection Setup</p>
+<p class="figure">Figure 12: MPTCP RobE_eSIM explicit Connection Setup</p>
 <p></p>
-<h1 id="rfc.section.3.1.2">
-<a href="#rfc.section.3.1.2">3.1.2.</a> <a href="#pro_adpt_1" id="pro_adpt_1">Protocol Adaptation</a>
+<h1 id="rfc.section.3.1.3">
+<a href="#rfc.section.3.1.3">3.1.3.</a> <a href="#pro_adpt_1" id="pro_adpt_1">Protocol Adaptation</a>
 </h1>
-<h1 id="rfc.section.3.1.2.1">
-<a href="#rfc.section.3.1.2.1">3.1.2.1.</a> <a href="#robe_ext_en_opt" id="robe_ext_en_opt">ROBE_eSIM_EN Option</a>
+<h1 id="rfc.section.3.1.3.1">
+<a href="#rfc.section.3.1.3.1">3.1.3.1.</a> <a href="#robe_ext_en_opt" id="robe_ext_en_opt">ROBE_eSIM_EN Option</a>
 </h1>
-<div id="rfc.figure.11"></div>
+<div id="rfc.figure.13"></div>
 <div id="ref-robe-ext-en-option"></div>
 <pre>
                    1                   2                   3
@@ -976,12 +1066,12 @@ Address A1    Address A2                             Address B1
 |     Kind      |    Length     |Subtype|    (reserved)         |
 +---------------+---------------+-------+-------+---------------+
 </pre>
-<p class="figure">Figure 11: ROBE_eSIM_EN_OPTION</p>
+<p class="figure">Figure 13: ROBE_eSIM_EN_OPTION</p>
 <p></p>
-<h1 id="rfc.section.3.1.2.2">
-<a href="#rfc.section.3.1.2.2">3.1.2.2.</a> <a href="#mp_join_cap_opt" id="mp_join_cap_opt">MP_JOIN_CAP Option</a>
+<h1 id="rfc.section.3.1.3.2">
+<a href="#rfc.section.3.1.3.2">3.1.3.2.</a> <a href="#mp_join_cap_opt" id="mp_join_cap_opt">MP_JOIN_CAP Option</a>
 </h1>
-<div id="rfc.figure.12"></div>
+<div id="rfc.figure.14"></div>
 <div id="ref-mp-join-cap"></div>
 <pre>
                    1                   2                   3
@@ -1003,17 +1093,22 @@ Address A1    Address A2                             Address B1
  HMAC =  (HMAC_keys &amp; ~0x3FF) | Key-B_fast_hash  -&gt; (size HMAC_keys)
 
 </pre>
-<p class="figure">Figure 12: MP_JOIN_CAP</p>
+<p class="figure">Figure 14: MP_JOIN_CAP</p>
 <p></p>
-<p id="rfc.section.3.1.2.2.p.2">Computational effort on receiver side is most often expected to be the same as with MP_JOIN. Key-A ensures identification of related flows Key-B_fast_hash enables MP session even when selected initial flow is not fully established yet (slight computational overhead).HMAC authenticates relationship of initial and potential initital flows.</p>
-<h1 id="rfc.section.3.1.3">
-<a href="#rfc.section.3.1.3">3.1.3.</a> <a href="#fallback_1" id="fallback_1">Fallback Mechanism</a>
+<p id="rfc.section.3.1.3.2.p.2">Computational effort on receiver side is most often expected to be the same as with MP_JOIN. Key-A ensures identification of related flows Key-B_fast_hash enables MP session even when selected initial flow is not fully established yet (slight computational overhead).HMAC authenticates relationship of initial and potential initital flows.</p>
+<h1 id="rfc.section.3.1.4">
+<a href="#rfc.section.3.1.4">3.1.4.</a> <a href="#fallback_1" id="fallback_1">Fallback Mechanisms</a>
 </h1>
-<h1 id="rfc.section.3.1.3.1">
-<a href="#rfc.section.3.1.3.1">3.1.3.1.</a> <a href="#robe_fallback_1" id="robe_fallback_1">Fallback to MPTCP without RobE_eSIM</a>
+<h1 id="rfc.section.3.1.4.1">
+<a href="#rfc.section.3.1.4.1">3.1.4.1.</a> <a href="#robe_fallback_0" id="robe_fallback_0">Fallback mechanism for implicit RobE_eSIM</a>
 </h1>
-<p id="rfc.section.3.1.3.1.p.1">This mechanism considers that both sides support MPTCP capability but the receiver does not equipped with RobE_eSIM. MPTCP session with RobE_eSIM negotiation will seamlessly fallback to normal MPTCP process.</p>
-<div id="rfc.figure.13"></div>
+<p id="rfc.section.3.1.4.1.p.1">[TBD]</p>
+<h1 id="rfc.section.3.1.4.2">
+<a href="#rfc.section.3.1.4.2">3.1.4.2.</a> <a href="#robe_fallback_1" id="robe_fallback_1">Fallback mechanism for explicit RobE_eSIM</a>
+</h1>
+<p id="rfc.section.3.1.4.2.p.1">This mechanism considers that both sides support MPTCP capability but the receiver does not equipped with RobE_eSIM. MPTCP session with RobE_eSIM negotiation will seamlessly fallback to normal MPTCP process.</p>
+<p id="rfc.section.3.1.4.2.p.2">[Requires further check how an unaware Host B reacts on possible ROBE_eSIM_EN; Ignore or RST? See also RFC6824 Sec. 3.6 "Shoukd fallback [...] the path does not support the MPTCP options"]</p>
+<div id="rfc.figure.15"></div>
 <div id="ref_fallback_1"></div>
 <pre>
           Host A                              Host B
@@ -1038,13 +1133,13 @@ Address A1    Address A2                    Address B1
     |             |     MP_JOIN Process...      | 
     |             |                             |
 </pre>
-<p class="figure">Figure 13: Fallback to MPTCP without RobE_eSIM</p>
+<p class="figure">Figure 15: Fallback to MPTCP without RobE_eSIM support</p>
 <p></p>
-<h1 id="rfc.section.3.1.3.2">
-<a href="#rfc.section.3.1.3.2">3.1.3.2.</a> <a href="#robe_fallback_2" id="robe_fallback_2">Fallback to Regular TCP</a>
+<h1 id="rfc.section.3.1.4.3">
+<a href="#rfc.section.3.1.4.3">3.1.4.3.</a> <a href="#robe_fallback_2" id="robe_fallback_2">Fallback to Regular TCP</a>
 </h1>
-<p id="rfc.section.3.1.3.2.p.1">When the receiver is not MPTCP enabled, MPTCP session with RobE_eSIM negotiation will seamlessly fallback to regular process which is illustrated in this section.</p>
-<div id="rfc.figure.14"></div>
+<p id="rfc.section.3.1.4.3.p.1">When the receiver is not MPTCP enabled, MPTCP session with RobE_eSIM negotiation will seamlessly fallback to regular process which is illustrated in this section.</p>
+<div id="rfc.figure.16"></div>
 <div id="ref_fallback_2"></div>
 <pre>
           Host A                              Host B
@@ -1067,20 +1162,56 @@ Address A1    Address A2                    Address B1
     |             |   Regular TCP Process...    | 
     |             |                             |
 </pre>
-<p class="figure">Figure 14: Fallback to MPTCP without MPTCP</p>
+<p class="figure">Figure 16: Fallback to TCP without MPTCP support</p>
 <p></p>
-<h1 id="rfc.section.3.1.4">
-<a href="#rfc.section.3.1.4">3.1.4.</a> <a href="#sec_con_1" id="sec_con_1">Security Consideration</a>
+<h1 id="rfc.section.3.1.5">
+<a href="#rfc.section.3.1.5">3.1.5.</a> Comparison Robe_SIM and RobE_eSIM</h1>
+<div id="rfc.figure.17"></div>
+<div id="ref-mptcp-robe-sim-and-robe-ext-signaling"></div>
+<pre>
+             Host A                                  Host B
+     ------------------------                       ----------
+     Address A1    Address A2                       Address B1
+     ----------    ----------                       ----------
+         |             |                                |
+         |            SYN + MP_CAPABLE(Key-A[*])        |
+ (SA1)   |---------------------------------------------&gt;|  (SB1)
+         |             |    SYN + MP_CAPABLE(Key-A'[*]) |
+ (SA2)   |             |-------------------------------&gt;|  (SB2)
+         |             |                                | 
+ (SA3)   |&lt;---------------------------------------------|  (SB3)
+         |          SYN/ACK + MP_CAPABLE(Key-B)         |
+ (SA4)   |             |&lt;-------------------------------|  (SB4)
+         |             |   SYN/ACK + MP_CAPABLE(Key-B') |
+         |             |                                |
+         |        ACK + MP_CAPABLE(Key-A, Key-B)        |
+ (SA5)   |---------------------------------------------&gt;|  (SB5)
+         |             |             RST                |
+ (SA6.1) |             |-------------------------------&gt;|  (SB6.1)
+RobE SIM |             |                                |
+(robust) |             |                                | 
+-------------------------------------------------------------------         
+RobE EXT |             |                                | 
+(+fast)  |             | ACK + MP_JOIN_CAP(Key-A, HMAC) |
+ (SA6.2) |             |-------------------------------&gt;|  (SB6.2)
+
+         [*] Key-A in the first MP-capable is related to
+             RFC6824 only and does not exist in RFC6824bis.
+</pre>
+<p class="figure">Figure 17: MPTCP RobE_SIM and RobE_EXT connection setup</p>
+<p id="rfc.section.3.1.5.p.1">Potential initial flows in RobE_SIM <a href="#robe_sim" class="xref">Section 2.2</a> and RobE_eSIM <a href="#robe_ext" class="xref">Section 3.1</a> guarantee MPTCP session establishment if at least one selected path for session establishment is functional. <a href="#ref-mptcp-robe-sim-and-robe-ext-signaling" class="xref">Figure 17</a> makes the differences between both approaches visible and points to the latest decision point during session setup when RobE_SIM or RobE_eSIM can be applied. Until SA5 in <a href="#ref-mptcp-robe-sim-and-robe-ext-signaling" class="xref">Figure 17</a> traditional MPTCP connection setup is independently applied on multiple paths simultaneously and offers to select the initial flow later (potential initial flows). The final decision which path is selected as the main one and the handling of the remaining flow(s) differs in SA6.1 when RobE_SIM is applied or instead SA6.2 RobE_EXT. The final decision which path is selected as the main one and the handling of the remaining flow(s) differs in SA6.1 when RobE_SIM is applied or instead SA6.2 RobE_EXT.  </p>
+<h1 id="rfc.section.3.1.6">
+<a href="#rfc.section.3.1.6">3.1.6.</a> <a href="#sec_con_1" id="sec_con_1">Security Consideration</a>
 </h1>
-<p id="rfc.section.3.1.4.p.1">[Tbd]</p>
+<p id="rfc.section.3.1.6.p.1">[Tbd, however no differences to <a href="#RFC6824" class="xref">[RFC6824]</a> and <a href="#I-D.ietf-mptcp-rfc6824bis" class="xref">[I-D.ietf-mptcp-rfc6824bis]</a> are expected]</p>
 <h1 id="rfc.section.3.2">
 <a href="#rfc.section.3.2">3.2.</a> <a href="#robe_ips_ext" id="robe_ips_ext">Heuristic Initial Path Selction with Server-RTT Measurement</a>
 </h1>
 <h1 id="rfc.section.3.2.1">
 <a href="#rfc.section.3.2.1">3.2.1.</a> <a href="#Des" id="Des">Description</a>
 </h1>
-<p id="rfc.section.3.2.1.p.1">Normally, path RTT can be determined by a time difference between sending a package and an ACK. For the asymmetric downloading service, the latest RTT for these subflows is calculated by data sender, i.e. application server and transformed to data receiver. Besides "latest RTT", algorithm for estimating the mean RTT by more than one RTT sent from data sender is also proposed. <a href="#ref_robe_ips_ext" class="xref">Figure 15</a> presents the negotiation of this capability between both sides during session establishment when RobE_IPS is enabled on client.</p>
-<div id="rfc.figure.15"></div>
+<p id="rfc.section.3.2.1.p.1">Usually the path RTT can be determined by a time difference between sending a package and an ACK and is integrated into the TCP protocol. For asymmetric transmission, the latest RTT for TCP flows is calculated by the side which sends data at latest and possible does not correspond to the site which employs RobE_IPS. This problem is already elaborated in <a href="#initial_path_selected_on_RTT" class="xref">Section 2.3.4</a> and can be solved by transmitting the RTT information per subflow. The negotiation procedure is depicted in <a href="#ref_robe_ips_ext" class="xref">Figure 18</a> and uses the MPTCP option L_RTT_EN</p>
+<div id="rfc.figure.18"></div>
 <div id="ref_robe_ips_ext"></div>
 <pre>
         Host A                                Host B
@@ -1095,19 +1226,20 @@ Address A1    Address A2                    Address B1
     |               ACK+MP_CAPABLE              |
     |------------------------------------------&gt;|
     |      ACK+DSS+L_RTT_EN(latest RTT)+Data    |
-    |------------------------------------------&gt;|
+    |&lt;------------------------------------------|
     |             |       SYN+MP_JOIN           |  
     |             |----------------------------&gt;|
     |             |     MP_JOIN Process...      | 
     |             |                             |
-</pre>
-<p class="figure">Figure 15: robe_ips_with_server_rtt</p>
+    </pre>
+<p class="figure">Figure 18: Negotiation procedure for RTT exchange</p>
 <p></p>
+<p id="rfc.section.3.2.1.p.3">A succuessful negotiation allows the exchange of the measured RTT value from one subflow of a MPTCP host to another using the ROBE_L_RTT_OPTION defined in <a href="#pro_adpt_2" class="xref">Section 3.2.2</a>.</p>
 <h1 id="rfc.section.3.2.2">
 <a href="#rfc.section.3.2.2">3.2.2.</a> <a href="#pro_adpt_2" id="pro_adpt_2">Protocol Adaptation</a>
 </h1>
 <p id="rfc.section.3.2.2.p.1">Latest RTT calculated by server in asymmetry case should be transferred from server to client. So a new MPTCP subtype option named L_RTT is allocated for this function. During three-way handshake L_RTT field is used for negotiation of Server-RTT capability between client and server (in <a href="#Des" class="xref">Section 3.2.1</a>). When both part support the usage of Server-RTT, Latest RTT field is applied for carrying the value of latest RTT computed by server.</p>
-<div id="rfc.figure.16"></div>
+<div id="rfc.figure.19"></div>
 <div id="ref-robe-l-rtt-option"></div>
 <pre>
                    1                   2                   3
@@ -1120,13 +1252,14 @@ Address A1    Address A2                    Address B1
 |                                                               |
 +---------------------------------------------------------------+			
 </pre>
-<p class="figure">Figure 16: ROBE_L_RTT_OPTION</p>
+<p class="figure">Figure 19: ROBE_L_RTT_OPTION</p>
 <p></p>
 <h1 id="rfc.section.3.2.3">
 <a href="#rfc.section.3.2.3">3.2.3.</a> <a href="#fallback_2" id="fallback_2">Fallback Mechanism</a>
 </h1>
 <p id="rfc.section.3.2.3.p.1">When the receiver is not L_RTT enabled, MPTCP session with L_RTT negotiation will seamlessly fallback to normal MPTCP process.</p>
-<div id="rfc.figure.17"></div>
+<p id="rfc.section.3.2.3.p.2">[TBD, Need same checks as <a href="#robe_fallback_1" class="xref">Section 3.1.4.2</a>]</p>
+<div id="rfc.figure.20"></div>
 <div id="ref_robe_ips_ext_fallback_2"></div>
 <pre>
              Host A                           Host B
@@ -1145,7 +1278,7 @@ Address A1    Address A2                    Address B1
     |             |       MP_JOIN Process...    | 
     |             |                             |
 </pre>
-<p class="figure">Figure 17: Fallback to MPTCP without RobE_IPS_eSIM</p>
+<p class="figure">Figure 20: Fallback to MPTCP without RobE_IPS_eSIM</p>
 <p></p>
 <h1 id="rfc.section.3.2.4">
 <a href="#rfc.section.3.2.4">3.2.4.</a> <a href="#sec_con_2" id="sec_con_2">Security Consideration</a>
