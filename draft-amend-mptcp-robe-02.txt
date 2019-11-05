@@ -128,7 +128,7 @@ Internet-Draft                 MPTCP RobE                  November 2019
        3.2.4.  Security Consideration  . . . . . . . . . . . . . . .  25
    4.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  25
    5.  Informative References  . . . . . . . . . . . . . . . . . . .  26
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  26
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  27
 
 1.  Introduction
 
@@ -241,15 +241,18 @@ Internet-Draft                 MPTCP RobE                  November 2019
    introduces the concept of potential initial flows triggered
    simultaneously.  Potential initial flows gives the freedom to use
    more than one path to request multipath capability and select the
-   initial flow at a later point.  RobE_SIM is a break-before-make
-   mechanism, guaranteeing at least the robust connection establishment,
-   however the RobE_eSIM reuses every potential initial flow request to
-   combine it with less overhead and accelerated multipath availability,
-   leveraging a new MPTCP option MP_JOIN_CAP.  From a standardization
-   perspective, the RobE_SIM is fully compliant with [RFC6824] and
-   [I-D.ietf-mptcp-rfc6824bis] and is herein more of a descriptive and
-   procedural nature.  The RobE_eSIM requires a new MPTCP option but
-   with the potential to significantly improve the MPTCP experience.
+   initial flow at a later point.  Potential initial flow mechanisms and
+   the gain of robustness and performance over the traditional MPTCP
+   connection setup are evaluated in [RobE_slides] and [RobE_paper].
+   RobE_SIM is a break-before-make mechanism, guaranteeing at least the
+   robust connection establishment, however the RobE_eSIM reuses every
+   potential initial flow request to combine it with less overhead and
+   accelerated multipath availability, leveraging a new MPTCP option
+   MP_JOIN_CAP.  From a standardization perspective, the RobE_SIM is
+   fully compliant with [RFC6824] and [I-D.ietf-mptcp-rfc6824bis] and is
+   herein more of a descriptive and procedural nature.  The RobE_eSIM
+   requires a new MPTCP option but with the potential to significantly
+   improve the MPTCP experience.
 
    For the limitation of the default initial path, RobE_IPS makes no
    changes to standard MPTCP procedure and improves the performance of
@@ -270,9 +273,6 @@ Internet-Draft                 MPTCP RobE                  November 2019
    new try on a next path is depending on an expiration timer,
    preferably re-use TCP's in-built expiration timer.
 
-   Table 1 summarizes the impact of RobE_TIMER, RobE_SIM, RobE_eSIM and
-   RobE_IPS compared to [RFC6824] and [I-D.ietf-mptcp-rfc6824bis].
-
 
 
 
@@ -281,6 +281,9 @@ Amend & Kang               Expires May 7, 2020                  [Page 5]
 
 Internet-Draft                 MPTCP RobE                  November 2019
 
+
+   Table 1 summarizes the impact of RobE_TIMER, RobE_SIM, RobE_eSIM and
+   RobE_IPS compared to [RFC6824] and [I-D.ietf-mptcp-rfc6824bis].
 
    +---------+--------+---------------+--------+-------------+---------+
    | Scenari | MPTCP  | RobE_TIMER    | RobE_S | RobE_eSIM   | RobE_IP |
@@ -326,9 +329,6 @@ Internet-Draft                 MPTCP RobE                  November 2019
       in this context by a 4-tuple of source and destination address/
       port pairs.
 
-      Subflow: A flow of TCP segments operating over an individual path,
-      which forms part of a larger MPTCP connection.  A subflow is
-      started and terminated similar to a regular TCP connection.
 
 
 
@@ -337,6 +337,10 @@ Amend & Kang               Expires May 7, 2020                  [Page 6]
 
 Internet-Draft                 MPTCP RobE                  November 2019
 
+
+      Subflow: A flow of TCP segments operating over an individual path,
+      which forms part of a larger MPTCP connection.  A subflow is
+      started and terminated similar to a regular TCP connection.
 
 2.  Implementation without MPTCP protocol adaptation
 
@@ -366,10 +370,6 @@ Internet-Draft                 MPTCP RobE                  November 2019
    retransmission time plus half a Round Trip Time (RTT) of the second
    path, it will arrive at the server after the second SYN.  The server
    could now treat the segment as obsolete and drop it.
-
-
-
-
 
 
 
@@ -1436,6 +1436,28 @@ Internet-Draft                 MPTCP RobE                  November 2019
               Addresses", RFC 6824, DOI 10.17487/RFC6824, January 2013,
               <https://www.rfc-editor.org/info/rfc6824>.
 
+   [RobE_paper]
+              Amend, M., Rakocevic, V., Matz, A. P., and E. Bogenfeld,
+              "RobE: Robust Connection Establishment for Multipath TCP",
+              ANRW '18 p. 76-82, July 2018,
+              <http://doi.acm.org/10.1145/3232755.3232762>.
+
+   [RobE_slides]
+              Amend, M., Matz, A. P., and E. Bogenfeld, "A proposal for
+              MPTCP Robust session Establishment (MPTCP RobE)", IETF
+              99 Multipath TCP WG session, July 2017,
+              <https://datatracker.ietf.org/meeting/99/materials/slides-
+              99-mptcp-a-proposal-for-mptcp-robust-session-
+              establishment-mptcp-robe-01>.
+
+
+
+
+Amend & Kang               Expires May 7, 2020                 [Page 26]
+
+Internet-Draft                 MPTCP RobE                  November 2019
+
+
 Authors' Addresses
 
    Markus Amend
@@ -1447,17 +1469,6 @@ Authors' Addresses
    Email: Markus.Amend@telekom.de
 
 
-
-
-
-
-
-
-Amend & Kang               Expires May 7, 2020                 [Page 26]
-
-Internet-Draft                 MPTCP RobE                  November 2019
-
-
    Jiao Kang
    Huawei
    D2-03,Huawei Industrial Base
@@ -1466,17 +1477,6 @@ Internet-Draft                 MPTCP RobE                  November 2019
    China
 
    Email: kangjiao@huawei.com
-
-
-
-
-
-
-
-
-
-
-
 
 
 

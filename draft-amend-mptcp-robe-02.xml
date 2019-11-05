@@ -94,7 +94,7 @@
       <t>
    It can be concluded, that sequential path establishment relying with an initial path establishment over an external given default route will result in experience reduction when using MPTCP. So this document proposes solutions to overcome the aforementioned limitations and provides a more robust connection setup compared to traditional MPTCP.</t>
       <t>
-   RobE_SIM and RobE_eSIM aims to overcome the limitations of <xref target="RFC6824"/> and <xref target="I-D.ietf-mptcp-rfc6824bis"/>, using one initial flow and introduces the concept of potential initial flows triggered simultaneously.  Potential initial flows gives the freedom to use more than one path to request multipath capability and select the initial flow at a later point.  RobE_SIM is a break-before-make mechanism, guaranteeing at least the robust connection establishment, however the RobE_eSIM reuses every potential initial flow request to combine it with less overhead and accelerated multipath availability, leveraging a new MPTCP option MP_JOIN_CAP. From a standardization perspective, the RobE_SIM is fully compliant with <xref target="RFC6824"/> and <xref target="I-D.ietf-mptcp-rfc6824bis"/> and is herein more of a descriptive and procedural nature. The RobE_eSIM requires a new MPTCP option but with the potential to significantly improve the MPTCP experience.</t>
+   RobE_SIM and RobE_eSIM aims to overcome the limitations of <xref target="RFC6824"/> and <xref target="I-D.ietf-mptcp-rfc6824bis"/>, using one initial flow and introduces the concept of potential initial flows triggered simultaneously.  Potential initial flows gives the freedom to use more than one path to request multipath capability and select the initial flow at a later point. Potential initial flow mechanisms and the gain of robustness and performance over the traditional MPTCP connection setup are evaluated in <xref target="RobE_slides"/> and <xref target="RobE_paper"/>. RobE_SIM is a break-before-make mechanism, guaranteeing at least the robust connection establishment, however the RobE_eSIM reuses every potential initial flow request to combine it with less overhead and accelerated multipath availability, leveraging a new MPTCP option MP_JOIN_CAP. From a standardization perspective, the RobE_SIM is fully compliant with <xref target="RFC6824"/> and <xref target="I-D.ietf-mptcp-rfc6824bis"/> and is herein more of a descriptive and procedural nature. The RobE_eSIM requires a new MPTCP option but with the potential to significantly improve the MPTCP experience.</t>
       <t>
 	      For the limitation of the default initial path, RobE_IPS makes no changes to standard MPTCP procedure and improves the performance of connection establishment by introducing an initial path selection strategy and required algorithms. The input for strategy and algorithms is the transmission status information which represents the transmission performance of each available path or network interface. The transmission status information is characterized by at least one of the parameters: signal strength, throughput, round-trip time (RTT) and link success rate. In this way, a path with better transmission performance can be learned and determined and the respective network interface can be used for connection establishment.</t>
       <t>
@@ -783,6 +783,15 @@ Address A1    Address A2                    Address B1
 	&I-D.ietf-mptcp-rfc6824bis;
 	&RFC0793;
 	&RFC6824;
+	<reference anchor="RobE_paper" target="http://doi.acm.org/10.1145/3232755.3232762"><front><title>RobE: Robust Connection Establishment for Multipath TCP</title><author surname="Amend" fullname="Markus Amend">
+	</author><author surname="Rakocevic" fullname="Veselin Rakocevic">
+	</author><author surname="Matz" fullname="Andreas Philipp Matz">
+	</author><author surname="Bogenfeld" fullname="Eckard Bogenfeld">
+	</author><date day="16" month="July" year="2018"/></front><seriesInfo name="ANRW '18" value="p. 76-82"/></reference>
+	<reference anchor="RobE_slides" target="https://datatracker.ietf.org/meeting/99/materials/slides-99-mptcp-a-proposal-for-mptcp-robust-session-establishment-mptcp-robe-01"><front><title>A proposal for MPTCP Robust session Establishment (MPTCP RobE)</title><author surname="Amend" fullname="Markus Amend">
+	</author><author surname="Matz" fullname="Andreas Philipp Matz">
+	</author><author surname="Bogenfeld" fullname="Eckard Bogenfeld">
+	</author><date day="18" month="July" year="2017"/></front><seriesInfo name="IETF 99" value="Multipath TCP WG session"/></reference>
 	</references>
   </back>
 </rfc>
