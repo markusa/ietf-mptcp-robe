@@ -932,7 +932,7 @@ Internet-Draft                 MPTCP RobE                  November 2019
        (SA5)   |--------------------------------------------->|  (SB5)
                |             |                                |
        (SA6.2) |             |                                |  (SB6.2)
-      RobE EXT |             | ACK + MP_JOIN_CAP(Key-A, HMAC) |
+      RobE eSIM|             | ACK + MP_JOIN_CAP(Key-A, HMAC) |
       (+fast)  |             |------------------------------->|
 
                [*] Key-A in the first MP-capable is related to
@@ -1366,7 +1366,7 @@ Internet-Draft                 MPTCP RobE                  November 2019
 
    [TBD, Need same checks as Section 3.1.4.2]
 
-                       Host A                           Host B
+                   Host A                               Host B
           ------------------------                    ----------
           Address A1    Address A2                    Address B1
           ----------    ----------                    ----------
