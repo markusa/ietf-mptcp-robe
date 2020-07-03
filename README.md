@@ -1,10 +1,17 @@
-# ietf-mptcp-robe
+# draft-mptcp-robe [![Build Status](https://travis-ci.com/markusa/ietf-mptcp-robe.svg?branch=master)](https://travis-ci.com/markusa/ietf-mptcp-robe)
+IETF draft on reliable MPTCP sessionn establishment
 
-## Usage
-When pushing changes to the *.xml file, please update the *.txt and *.html file as well.
+This is work in progress. Travis has been configured to verify:
 
-Use: `xml2rfc *.xml --text --html`
+- the spelling (see the .spelling file if you need to add specific words to the dictionnary)
+- the build of the Internet drafts
 
-Make sure, that the  XML file has a proper format and indentation, use:
+Please ensure that the CI tests continue to succeed everytime you submit a pull request.
 
-`xmllint --format *.xml`
+Get latest `.txt` and `.html` view from `markusa/ietf-mptcp-robe` `master`branch
+
+**`.txt`**
+[draft-amend-mptcp-robe.txt](https://xml2rfc.tools.ietf.org/cgi-bin/xml2rfc-dev.cgi?url=https://raw.githubusercontent.com/markusa/ietf-mptcp-robe/master/draft-amend-mptcp-robe.mkd&inputtype=kramdown) [(Debug)](https://xml2rfc.tools.ietf.org/cgi-bin/xml2rfc-dev.cgi?url=https://raw.githubusercontent.com/markusa/ietf-mptcp-robe/master/ddraft-amend-mptcp-robe.mkd&inputtype=kramdown&type=toframe)
+
+**`.html`**
+[draft-amend-mptcp-robe.html](https://xml2rfc.tools.ietf.org/cgi-bin/xml2rfc-dev.cgi?url=https://raw.githubusercontent.com/markusa/ietf-mptcp-robe/master/draft-amend-mptcp-robe.mkd&inputtype=kramdown&mode=html) [(Debug)](https://xml2rfc.tools.ietf.org/cgi-bin/xml2rfc-dev.cgi?url=https://raw.githubusercontent.com/markusa/ietf-mptcp-robe/master/draft-amend-mptcp-robe.mkd&inputtype=kramdown&mode=html&type=toframe)
