@@ -1,23 +1,24 @@
 ---
 title: Multipath TCP Extension for Robust Session Establishment
 abbrev: MPTCP RobE
-docname: draft-amend-tcpm-mptcp-robe-01
-stand_alone: true
+docname: draft-amend-tcpm-mptcp-robe-02
 date: 2020-07-03
 cat: exp
-wg: TCP Maintenance and Minor Extensions
-submissiontype: IETF
+
 ipr: trust200902
-pi:
-  compact: 'yes'
-  text-list-symbols: o*+-
-  subcompact: 'no'
-  sortrefs: 'yes'
-  symrefs: 'yes'
-  strict: 'yes'
-  toc: 'yes'
+area: transport
+wg: TCP Maintenance and Minor Extensions
+keyword: Internet-Draft
+submissiontype: IETF
+
+coding: us-ascii
+stand_alone: true
+
+pi: [toc, sortrefs, symrefs]
+
 author:
-- ins: M. Amend
+- 
+  ins: M. Amend
   name: Markus Amend
   org: Deutsche Telekom
   street:
@@ -25,7 +26,8 @@ author:
   - 64295 Darmstadt
   - Germany
   email: Markus.Amend@telekom.de
-- ins: J. Kang
+-
+  ins: J. Kang
   name: Jiao Kang
   org: Huawei
   street:
@@ -34,10 +36,13 @@ author:
   - Shenzhen
   - China
   email: kangjiao@huawei.com
-informative:
+
+normative:
   RFC6824:
   RFC0793:
   RFC6824:
+
+informative:
   RobE_paper:
     target: http://doi.acm.org/10.1145/3232755.3232762
     title: 'RobE: Robust Connection Establishment for Multipath TCP'
