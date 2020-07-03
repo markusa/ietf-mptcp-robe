@@ -17,7 +17,7 @@ stand_alone: true
 pi: [toc, sortrefs, symrefs]
 
 author:
-- 
+ - 
   ins: M. Amend
   name: Markus Amend
   org: Deutsche Telekom
@@ -26,7 +26,7 @@ author:
   - 64295 Darmstadt
   - Germany
   email: Markus.Amend@telekom.de
--
+ -
   ins: J. Kang
   name: Jiao Kang
   org: Huawei
