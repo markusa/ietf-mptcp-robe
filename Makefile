@@ -1,22 +1,22 @@
 xml2rfc ?= xml2rfc --v3
 kramdown-rfc2629 ?= kramdown-rfc2629 -3
 
-drafts := draft-amend-tcpm-mptcp-robe.txt draft-amend-tcpm-mptcp-robe.html
-xml := $(drafts:.txt=.xml)
-mkd := $(drafts:.txt=.mkd)
+SOURCES?=${wildcard *.mkd}
+TEXT=${SOURCES:.mkd=.txt}
+HTML=${SOURCES:.mkd=.html}
+XML=${SOURCES:.mkd=.xml}
 
-%.txt: %.mkd 
-	$(kramdown-rfc2629) $< > $(patsubst %.txt,%.xml, $@)
-	$(xml2rfc) $(patsubst %.txt,%.xml, $@) > $@
+default: xml text
+xml:	$(XML)
+text:	$(TEXT)
+html:	$(HTML)
+all: text html
 
-%.txt: %.xml
-	$(xml2rfc) $< $@
+%.xml:	%.mkd
+	$(kramdown-rfc2629) $< >$@
 
 %.html: %.xml
-	$(xml2rfc) --html $< $@
+	$(xml2rfc) --html $<
 
-
-all: $(drafts)
-
-spell: $(mkd)
-	mdspell -n -a --en-us -r $(mkd)
+%.txt:	%.xml
+	$(xml2rfc)  $< $@
