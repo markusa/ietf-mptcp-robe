@@ -21,20 +21,22 @@ author:
   ins: M. Amend
   name: Markus Amend
   org: Deutsche Telekom
-  street:
-  - Deutsche-Telekom-Alle 9
-  - 64295 Darmstadt
-  - Germany
+  abbrev: DT
+  street: Deutsche-Telekom-Alle 9
+  city: Darmstadt
+  code: 64295
+  country: Germany
   email: Markus.Amend@telekom.de
  -
   ins: J. Kang
   name: Jiao Kang
   org: Huawei
-  street:
-  - D2-03,Huawei Industrial Base
-  - Longgang District
-  - Shenzhen
-  - China
+  street: D2-03,Huawei Industrial Base
+  code: 518129
+  region: Guangdong
+  cityarea: Longgang
+  city: Shenzhen
+  country: China
   email: kangjiao@huawei.com
 
 normative:
@@ -219,8 +221,9 @@ RobE_eSIM and RobE_IPS compared to {{RFC6824}} and {{RFC6824}}.
 | MP availability duration     | MP_CAPABLE HS + MP_JOIN HS   | sum_1..n(MP_CAPABLE_n HS) + MP_JOIN HS | MP_CAPABLE HS + MP_JOIN HS | max(MP_CAPABLE_1 .. MP_CAPABLE_n HS) | MP_CAPABLE HS + MP_JOIN HS |
 | Guaranteeing session setup   | Depends on the default route | Yes                                    | Yes                        | Yes                                  | Depends on selection       |
 {: #table_robe_features title='Overview RobE features during initial connection setup'}
-
-IP: Initial Path; MP: Multi-Path; HS: Handshake
+<aside markdown="1">
+   IP: Initial Path; MP: Multi-Path; HS: Handshake
+</aside>
 
 
 ## Terminology {#terminology}

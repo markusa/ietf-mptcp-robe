@@ -1,7 +1,7 @@
-xml2rfc ?= xml2rfc
-kramdown-rfc2629 ?= kramdown-rfc2629
+xml2rfc ?= xml2rfc --v3
+kramdown-rfc2629 ?= kramdown-rfc2629 -3
 
-drafts := draft-amend-tcpm-mptcp-robe.txt
+drafts := draft-amend-tcpm-mptcp-robe.txt draft-amend-tcpm-mptcp-robe.html
 xml := $(drafts:.txt=.xml)
 mkd := $(drafts:.txt=.mkd)
 
