@@ -1,0 +1,46 @@
+// cSpell Settings
+{
+    // Version of the setting file.  Always 0.1
+    "version": "0.1",
+    // language - current active spelling language
+    "language": "en_US",
+    // words - list of words to be always considered correct
+    "words": [
+       "Multipath",
+       "MPTCP",
+       "docname",
+       "tcpm",
+       "mptcp",
+       "submissiontype",
+       "sortrefs",
+       "symrefs",
+       "Markus",
+       "Alle",
+       "Kang",
+       "Jiao",
+       "cityarea",
+       "Longgang",
+       "Shenzhen",
+       "Veselin",
+       "Rakocevic",
+       "Andreas",
+       "Philipp",
+       "Matz",
+       "Eckard",
+       "Bogenfeld",
+       "seriesinfo",
+       "ANRW",
+       "multipath",
+       "HMAC",
+       "subflow",
+       "TCP's",
+       "Subflow",
+       "subflows",
+       "CWND",
+       "RTTs",
+       "esim",
+       "adpt",
+       "IANA",
+       "iana"
+    ]
+}

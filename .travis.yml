@@ -4,4 +4,6 @@ before_install:
 install: 
  - gem install kramdown-rfc2629
  - sudo pip install xml2rfc
+ - sudo apt-get install npm
+ - sudo npm install cspell -g
 script: make

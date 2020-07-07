@@ -11,6 +11,7 @@ xml:	$(XML)
 text:	$(TEXT)
 html:	$(HTML)
 all: text html
+full: spell all
 
 %.xml:	%.mkd
 	$(kramdown-rfc2629) $< >$@
@@ -20,3 +21,9 @@ all: text html
 
 %.txt:	%.xml
 	$(xml2rfc)  $< $@
+
+spell: $(SOURCES)
+	cspell --no-summary --color $(SOURCES)
+	
+spell_list: $(SOURCES)
+	cspell --no-summary --wordsOnly -u $(SOURCES)|sed 's/.*/       "&"/'|sed '$$!s/$$/,/'

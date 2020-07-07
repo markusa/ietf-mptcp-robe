@@ -504,7 +504,7 @@ establishment.
 +---------------------------+
 |     Using the network     |
 |         interface         |
-|corrresponding to the path |
+|corresponding to the path |
 | with better transmission  |
 |performance for connection |
 |       establishment       |
