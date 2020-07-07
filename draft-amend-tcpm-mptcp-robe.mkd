@@ -42,7 +42,7 @@ author:
 normative:
   RFC6824:
   RFC0793:
-  RFC6824:
+  RFC8684:
 
 informative:
   RobE_paper:
@@ -105,12 +105,12 @@ in addition to the respective stand-alone solutions.
 # Introduction {#introduction}
 
 Multipath TCP Robust Session Establishment (MPTCP RobE) is a set of extensions
-to regular MPTCP {{RFC6824}} and its next upcoming version
-{{RFC6824}}, which releases single path limitations
+to regular MPTCP {{RFC6824}} and its next version
+{{RFC8684}}, which releases single path limitations
 during the initial connection setup.
 Several scenarios require and benefit from a reliable and in time connection
 setup which is not covered by {{RFC6824}} and
-{{RFC6824}} so far.  MPTCP was designed to be
+{{RFC8684}} so far.  MPTCP was designed to be
 compliant with the TCP standard {{RFC0793}} and introduced therefore
 the concept of an initial TCP flow while adding subsequent flows after
 successful multipath negotiation on the initial path.
@@ -119,8 +119,8 @@ characteristics of the communication link selected for initiating MPTCP.
 
 {{ref-mptcp-signaling}} shows the traditional way of MPTCP handshaking
 with a MP_CAPABLE exchanged first, followed when successful negotiated
-by additional flows engaging MP_JOIN. {{RFC6824}} and the upcoming
-next MPTCP {{RFC6824}} differ in that a Key-A is
+by additional flows engaging MP_JOIN. {{RFC6824}} and the 
+next MPTCP {{RFC8684}} differ in that a Key-A is
 sent with the first MP_CAPABLE or not.
 
 ~~~~
@@ -148,7 +148,7 @@ sent with the first MP_CAPABLE or not.
          |             |             ACK                |
 
          [*] Key-A in the first MP-capable is related to
-             RFC6824 only and does not exist in RFC6824.
+             RFC6824 only and does not exist in RFC8684.
 ~~~~
 {: #ref-mptcp-signaling title='MPTCP connection setup'}
 
@@ -179,7 +179,7 @@ the aforementioned limitations and provides a more robust connection setup
 compared to traditional MPTCP.
 
 RobE_SIM and RobE_eSIM aims to overcome the limitations of {{RFC6824}}
-and {{RFC6824}}, using one initial flow and
+and {{RFC8684}}, using one initial flow and
 introduces the concept of potential initial flows triggered simultaneously.
 Potential initial flows gives the freedom
 to use more than one path to request multipath capability and select the
@@ -191,7 +191,7 @@ connection establishment, however the RobE_eSIM reuses every potential initial
 flow request to combine it with less overhead and accelerated multipath availability,
 leveraging a new MPTCP option MP_JOIN_CAP. From a standardization perspective,
 the RobE_SIM is fully compliant with {{RFC6824}} and
-{{RFC6824}} and is herein more of a descriptive and
+{{RFC8684}} and is herein more of a descriptive and
 procedural nature. The RobE_eSIM requires a new MPTCP option but with
 the potential to significantly improve the MPTCP experience.
 
@@ -212,7 +212,7 @@ if the previous try has failed. Triggering a new try on a next path is depending
 on an expiration timer, preferably re-use TCP's in-built expiration timer.
 
 {{table_robe_features}} summarizes the impact of RobE_TIMER, RobE_SIM,
-RobE_eSIM and RobE_IPS compared to {{RFC6824}} and {{RFC6824}}.
+RobE_eSIM and RobE_IPS compared to {{RFC6824}} and {{RFC8684}}.
 
 | Scenario                     | MPTCP                        | RobE_TIMER                             | RobE_SIM                   | RobE_eSIM                            | RobE_IPS                   |
 | IP packet loss               | Delayed connection           | In the scope of timer                  | No impact                  | No impact                            | Delayed connection         |
@@ -244,7 +244,7 @@ Subflow:
 # Implementation without MPTCP protocol adaptation {#unilateral_impl}
 
 RobE_TIMER, RobE_SIM and RobE_IPS are compatible with the current MPTCP protocol
-definitions in {{RFC6824}} and {{RFC6824}} but may
+definitions in {{RFC6824}} and {{RFC8684}} but may
 be lack of the full optimization potential which require protocol
 adaptation in {{bi_impl}}. Following sections will describe them in detail.
 
@@ -288,13 +288,13 @@ Address A1    Address A2                       Address B1
     |                                              |
 
      [*] Key-A in the first MP-capable is related to
-      RFC6824 only and does not exist in RFC6824.
+      RFC6824 only and does not exist in RFC8684.
 ~~~~
 {: #ref-timer title='The Robe_TIMER Solution' artwork-align="center"}
 
 
 Immediately after sending the final ACK of the initial handshake, subflows
-are established on the remaining paths as defined in {{RFC6824}} and {{RFC6824}}
+are established on the remaining paths as defined in {{RFC6824}} and {{RFC8684}}
 
 [Notes: How to set the Timer is TBD. If there is the case that the first
 SYN on default path arrives earlier than that from the second path, the MPTCP
@@ -316,7 +316,7 @@ initial path. Host A sends then immediately a TCP RST message (SA6.1) on
 any other path used for simultaneous connection setup causing an immediate
 termination of assigned flows (break-before-make). The terminated ones are
 merged as subsequent subflows following the JOIN procedure described
-in {{RFC6824}} and {{RFC6824}}. The process is
+in {{RFC6824}} and {{RFC8684}}. The process is
 equivalent to any other scenario where the SYN/ACK arrives
 on an other path than depicted in {{ref_mptcp_robe_sim_signaling}}.
 
@@ -347,7 +347,7 @@ on an other path than depicted in {{ref_mptcp_robe_sim_signaling}}.
             |             |         MP_JOIN Process...     |
 
             [*] Key-A in the first MP-capable is related to
-                RFC6824 only and does not exist in RFC6824.
+                RFC6824 only and does not exist in RFC8684.
 ~~~~
 {: #ref_mptcp_robe_sim_signaling title='MPTCP RobE_SIM Connection Setup' artwork-align="center"}
 
@@ -666,7 +666,7 @@ Problem        |Yes
 Solutions which requires bi-directional support between two MPTCP hosts promise
 to have better and possibly more features. However, they cannot be defined
 without extending current standards in {{RFC6824}} and
-{{RFC6824}}. The RobE_SIM and RobE_IPS approach are
+{{RFC8684}}. The RobE_SIM and RobE_IPS approach are
 both capable of profit from an explicit
 support of the remote end host and defined within this section.
 
@@ -676,14 +676,14 @@ RobE_eSIM extends RobE_SIM by reusing the potential initial flows. This eliminat
 the overhead from RobE_SIM by introducing a new option MP_JOIN_CAP and accelerate
 the transmission speed by early availability of multiple paths. Further it
 relaxes the dependency on a reliable third ACK of the 3-way handshake
-in {{RFC6824}}. Remote endpoint support can be
+in {{RFC8684}}. Remote endpoint support can be
 negotiated in two ways, an implicit in {{robe_esim_implicit}} or
 explicit in {{robe_esim_explicit}}.
 
 ### RobE_eSIM implicit Negotiation and Procedure {#robe_esim_implicit}
 
-Similar to RobE_SIM in {{robe_sim}} the establishment process of
-{{RFC6824}} or {{RFC6824}} is applied independently
+Similar to RobE_SIM in {{robe_sim}}, the establishment process of
+{{RFC6824}} or {{RFC8684}} is applied independently
 on multiple path simultaneously. In
 {{ref_mptcp_robe_eSIM_implicit_signaling}} this is shown in SA1 and
 SA2. The first path which returns a SYN/ACK (e.g. SA3) is selected as
@@ -718,7 +718,7 @@ handshake includes a new option MP_JOIN_CAP (see definition in
    (+fast)  |             |------------------------------->|
 
             [*] Key-A in the first MP-capable is related to
-                RFC6824 only and does not exist in RFC6824.
+                RFC6824 only and does not exist in RFC8684.
 ~~~~
 {: #ref_mptcp_robe_eSIM_implicit_signaling title='MPTCP RobE_eSIM implicit Connection Setup' artwork-align="center"}
 
@@ -742,7 +742,7 @@ are imaginable and elaborated below.
 
 1. Like above, but MP_JOIN_CAP arrives before last MP_CAPABLE at Host B
 
-    * {{RFC6824}};
+    * {{RFC8684}};
     Based on Key-A, Host B will iterate over the connection list, but it will
     not find a match, because Key-A of the previous selected initial flow (SA3,
     SA5) has not arrived yet. So it will continue with a fast iteration only
@@ -756,7 +756,7 @@ are imaginable and elaborated below.
     also mitigates the exchange of a reliable ACK during the handshake process.
     MPTCP sends the Key-A only with the last ACK and therefore prevents subsequent
     flow establishment until successful reception at Host B. Using RobE_EXT,
-    the reception of a MP_JOIN_CAP ({{RFC6824}}) is
+    the reception of a MP_JOIN_CAP ({{RFC8684}}) is
     sufficient to establish both, the path carrying Key-B and Key-B'.
 
     * {{RFC6824}};
@@ -799,7 +799,7 @@ Address A1    Address A2                             Address B1
     |             |                                        |
 
       [*] Key-A in the first MP-capable is related to
-          RFC6824 only and does not exist in RFC6824.
+          RFC6824 only and does not exist in RFC8684.
 ~~~~
 {: #ref_mptcp_robe_eSIM_signaling title='MPTCP RobE_eSIM explicit Connection Setup' artwork-align="center"}
 
@@ -979,7 +979,7 @@ RobE EXT |             |                                |
  (SA6.2) |             |------------------------------->|  (SB6.2)
 
          [*] Key-A in the first MP-capable is related to
-             RFC6824 only and does not exist in RFC6824bis.
+             RFC6824 only and does not exist in RFC8684.
 ~~~~
 {: #ref-mptcp-robe-sim-and-robe-ext-signaling title='MPTCP RobE_SIM and RobE_eSIM connection setup'}
 
@@ -988,7 +988,7 @@ RobE EXT |             |                                |
 ### Security Consideration {#sec_con_1}
 
 [Tbd, however no differences to {{RFC6824}} and
-{{RFC6824}} are expected]
+{{RFC8684} are expected]
 
 
 ## Heuristic Initial Path Selection with remote RTT Measurement {#robe_ips_ext}
