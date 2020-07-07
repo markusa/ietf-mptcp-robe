@@ -1,4 +1,5 @@
 xml2rfc ?= xml2rfc --v3
+xml2rfc_prep ?= xml2rfc --preptool
 kramdown-rfc2629 ?= kramdown-rfc2629 -3
 
 SOURCES?=${wildcard *.mkd}
@@ -15,9 +16,10 @@ full: spell all
 
 %.xml:	%.mkd
 	$(kramdown-rfc2629) $< >$@
+	$(xml2rfc_prep) $@
 
 %.html: %.xml
-	$(xml2rfc) --html $<
+	$(xml2rfc) --html $< $@
 
 %.txt:	%.xml
 	$(xml2rfc)  $< $@

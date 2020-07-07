@@ -22,7 +22,7 @@ Get latest `.txt` and `.html` view from `markusa/ietf-mptcp-robe` `master`branch
 * `make` or `make default`  
 creates XML and TXT files
 * `make xml`  
-creates XML file solely
+creates XML file and prepped XML file for submission
 * `make text`  
 creates TXT and XML files
 * `make html`  
