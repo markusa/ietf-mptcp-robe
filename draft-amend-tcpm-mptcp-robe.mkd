@@ -22,7 +22,7 @@ author:
   name: Markus Amend
   org: Deutsche Telekom
   abbrev: DT
-  street: Deutsche-Telekom-Alle 9
+  street: Deutsche-Telekom-Allee 9
   city: Darmstadt
   code: 64295
   country: Germany
