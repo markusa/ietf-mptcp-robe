@@ -1,7 +1,7 @@
 # draft-mptcp-robe [![Build Status](https://travis-ci.com/markusa/ietf-mptcp-robe.svg?branch=master)](https://travis-ci.com/markusa/ietf-mptcp-robe)
 IETF draft on reliable MPTCP sessionn establishment
 
-This is work in progress. Travis has been configured to verify:
+This is work in progress and uses "xml2rfc" v3 vocabulary. Travis has been configured to verify:
 
 - the spelling (see the .cspell.json file if you need to add specific words to be considered correct)
 - the build of the Internet drafts
