@@ -24,7 +24,7 @@ creates XML and TXT files
 * `make xml`  
 creates XML file solely
 * `make text`  
-creates TXT and XMl files
+creates TXT and XML files
 * `make html`  
 creates HTML and XML files
 * `make all`  
