@@ -24,15 +24,17 @@ creates XML and TXT files
 * `make xml`  
 creates XML file solely
 * `make text`  
-creates TXT file solely
+creates TXT and XMl files
 * `make html`  
-creates HTML file solely
+creates HTML and XML files
 * `make all`  
 creates XML, TXT and HTML files
 * `make spell`  
 check spelling and returns list of unknown/incorrect words with line numbers
 * `make spell_list`  
-according to `make spell`generates a well shaped list ready to be copied to the .cspell.json "words" list
+generates according to `make spell` a well shaped list ready to be copied to the .cspell.json "words" list
+* `make clean`  
+delete all generated files and remain with the Markdown file solely
 * **`make full`** (used for travis)  
 check spelling and creates XML, TXT and HTML files
 
