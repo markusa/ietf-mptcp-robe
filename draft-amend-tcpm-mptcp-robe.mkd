@@ -1,7 +1,7 @@
 ---
 title: Multipath TCP Extension for Robust Session Establishment
 abbrev: MPTCP RobE
-docname: draft-amend-tcpm-mptcp-robe-02
+docname: draft-amend-tcpm-mptcp-robe-00
 date: 2020-07-07
 cat: exp
 
