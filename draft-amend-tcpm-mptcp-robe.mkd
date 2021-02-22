@@ -529,7 +529,7 @@ an MPTCP connection and belongs thereof to the transport-layer level.
 The transmission status information for each available path SHOULD be characterized
 by at least one of the parameters: signal strength, throughput, RTT, and link
 success rate.
-Application level informations are more seen for statistical purposes.
+Application level information are more seen for statistical purposes.
 
 * Application level: application name, domain name, port number, and location.
 
