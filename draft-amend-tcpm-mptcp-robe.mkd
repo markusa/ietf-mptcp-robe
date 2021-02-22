@@ -991,7 +991,7 @@ RobE EXT |             |                                |
 ### Security Consideration {#sec_con_1}
 
 [Tbd, however no differences to {{RFC6824}} and
-{{RFC8684} are expected]
+{{RFC8684}} are expected]
 
 
 ## Heuristic Initial Path Selection with remote RTT Measurement {#robe_ips_ext}
