@@ -217,9 +217,9 @@ RobE_eSIM, and RobE_IPS compared to {{RFC6824}} and {{RFC8684}}.
 | Scenario                     | MPTCP                        | RobE_TIMER                             | RobE_SIM                   | RobE_eSIM                            | RobE_IPS                   |
 | IP packet loss               | Delayed connection           | In the scope of timer                  | No impact                  | No impact                            | Delayed connection         |
 | IP broken                    | No connection                | In the scope of timer                  | No impact                  | No impact                            | No connection              |
-| IP setup duration dependency | Default route                | Default route (+ path 1..n)            | Fastest path               | Fastest path                         | Selected path              |
-| MP availability duration     | MP_CAPABLE HS + MP_JOIN HS   | sum_1..n(MP_CAPABLE_n HS) + MP_JOIN HS | MP_CAPABLE HS + MP_JOIN HS | max(MP_CAPABLE_1 .. MP_CAPABLE_n HS) | MP_CAPABLE HS + MP_JOIN HS |
-| Guaranteeing session setup   | Depends on the default route | Yes                                    | Yes                        | Yes                                  | Depends on selection       |
+| IP setup duration de-pendency | Default route                | Default route (+ path 1..n)            | Fastest path               | Fastest path                         | Selected path              |
+| MP avail-ability duration     | MP_CAPABLE HS + MP_JOIN HS   | sum_1..n( MP_CAPABLE_n HS) + MP_JOIN HS| MP_CAPABLE HS + MP_JOIN HS | max( MP_CAPABLE_1 .. MP_CAPABLE_n HS)| MP_CAPABLE HS + MP_JOIN HS |
+| Guaran-teeing session setup   | Depends on the default route | Yes                                    | Yes                        | Yes                                  | Depends on selection       |
 {: #table_robe_features title='Overview RobE features during initial connection setup'}
 <aside markdown="1">
    IP: Initial Path; MP: Multi-Path; HS: Handshake
